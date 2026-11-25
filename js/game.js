@@ -52,6 +52,7 @@ function recordAnswer(p,ok){
   G.total++;
   if(ok){ G.right++; removeRedo(p); } else addMiss(p);
   factLog(p,ok);
+  if(p.step!=null){ const id=STEPS[p.step].id, sk=me().skills[id]||[0,0]; sk[ok?0:1]++; me().skills[id]=sk; }   // per-skill accuracy
   return p.adapt? adaptRecord(ok) : 0;
 }
 function addMiss(p){ if(p.key&&!G.missed.includes(p.text)) G.missed.push(p.text); if(p.diff&&p.key){ const ex=G.redo[p.diff].find(x=>x.key===p.key); if(ex) ex.missN=G.n; else G.redo[p.diff].push({...p,missN:G.n}); } }
@@ -348,6 +349,7 @@ function endGame(){
   G.offSide='home'; G.clock=Math.max(0,G.clock); updateBoard(); const dd=$('#dd'); if(dd) dd.textContent='FINAL';
   const win=G.home>G.away, tie=G.home===G.away;
   if(win) me().record.w++; else if(tie) me().record.t++; else me().record.l++;
+  const gl=me().games; gl.push({d:Date.now(), opp:G.awayT, us:G.home, them:G.away, right:G.right, total:G.total, from:G.startStep, to:me().stepId}); while(gl.length>30) gl.shift();
   store.set(saved);
   if(!win&&!tie) setTimeout(loseJingle,300);
   if(win){ roar(1.5,4.5); horn(); setTimeout(winJingle,600); confetti(); setTimeout(confetti,900); G.cheerUntil=performance.now()+5000; }

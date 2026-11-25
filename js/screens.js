@@ -42,6 +42,7 @@ function startScreen(){
       <div class="note ladder" id="ladder">${ladderText()}</div></div>
     <div class="opt"><span class="label">Opponent</span>${segHTML('opp',[{v:'easy',l:'Easy',s:'scores rarely'},{v:'normal',l:'Normal',s:'close games'},{v:'tough',l:'Tough',s:'you need stops'}],me().opp)}</div>
     <button class="cta" id="kick">KICKOFF</button>
+    <button class="ghost coachbtn" id="coach">📋 Coach's Corner</button>
     <details class="settings glass"><summary>Settings</summary>
       <div class="setrow"><span class="label">Quarter length</span>${segHTML('qlen',[{v:120,l:'2 min',s:'quick'},{v:180,l:'3 min',s:'regular'},{v:300,l:'5 min',s:'long'}],saved.qLen)}</div>
       <div class="setrow"><span class="label">Play clock</span>${segHTML('pc',[{v:0,l:'Off'},{v:20,l:'20 sec'},{v:10,l:'10 sec'}],saved.pclock)}
@@ -58,13 +59,16 @@ function startScreen(){
     me().grade=g; resetLadder(); startScreen(); };
   $('#ladreset').onclick=()=>{ resetLadder(); $('#ladder').innerHTML=ladderText(); };
   bindSeg('am','ansMode',0,me()); bindSeg('opp','opp',0,me()); bindSeg('qlen','qLen',1); bindSeg('pc','pclock',1);
-  const tsnd=()=>{ const b=$('#tsnd'); b.innerHTML=`🎵<small>${musicOn()?'Music on':'Music off'}</small>`; b.classList.toggle('off',!musicOn()); };
+  // Phones play nothing until the first tap, so "on but not playing yet" says "Tap for music" and a tap starts it
+  const tsnd=()=>{ const b=$('#tsnd'); b.innerHTML=`🎵<small>${!musicOn()?'Music off':MUS.on?'Music on':'Tap for music'}</small>`; b.classList.toggle('off',!musicOn()); };
   const syncMusic=()=>{ if(musicOn()){ ac(); musicStart(); } else musicStop(); tsnd(); };
   $('#tsnd').onclick=()=>{ if(!sfxOn()){ saved.sound=true; saved.music=true; store.set(saved); return startScreen(); }   // all sound was off: tapping Music on turns sound back on too
+    if(musicOn()&&!MUS.on){ syncMusic(); return; }   // it was waiting for a tap: start it, don't switch it off
     saved.music=saved.music===false; store.set(saved); syncMusic(); };
+  document.addEventListener('pointerdown',()=>setTimeout(()=>{ if($('#tsnd')) tsnd(); },120),{once:true});   // first tap anywhere starts the theme (unlockAudio): update the label
   bindSeg('sndset','sound',0); const sndSeg=$('#sndset').onclick; $('#sndset').onclick=e=>{ sndSeg(e); syncMusic(); };   // update the setting first, then start/stop the theme
   tsnd();
-  bindBackup(); $('#who').onclick=()=>playersModal();
+  bindBackup(); $('#who').onclick=()=>playersModal(); $('#coach').onclick=()=>coachCorner();
   $('#pickH').onclick=()=>teamPicker('homeT'); $('#pickA').onclick=()=>teamPicker('awayT');
   $('#kick').onclick=()=>{ musicStop(); ac(); unlockAudio(); newGame(); gameScreen(); horn(); roar(1.1,2.6); setTimeout(whistle,1200); setTimeout(()=>crowdBed(true),1500); setTimeout(()=>startDrive(25),900); };
 }

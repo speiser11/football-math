@@ -10,14 +10,18 @@ function newGame(){
   G={homeT:me().homeT, awayT:me().awayT, qLen:saved.qLen, pclock:saved.pclock,
      q:1, clock:saved.qLen, ot:false, home:0, away:0, pos:25, down:1, toGo:10,
      right:0, total:0, bursts:0, missed:[], redo:{easy:[],medium:[],hard:[]},
-     offSide:'home', dir:1, lines:true};
+     offSide:'home', dir:1, lines:true, startStep:me().stepId};
   GAME++; ANIM=null; ACT=[]; FX=[]; BALL={segs:[{t0:0,t1:1,type:'ground',x:35,y:MIDY}]}; cam={x:40,y:MIDY,init:false};
   buildCrowd();
 }
 function spotText(pos){ if(pos===50)return '50'; return pos<50?`${T().abbr} ${pos}`:`${O().abbr} ${100-pos}`; }
 const ord=n=>['','1st','2nd','3rd','4th'][Math.max(1,Math.min(4,n))];
 
-function factLog(p,ok){ if(!p.key||!/x/.test(p.key)) return; const k=norm(p.key); const f=me().facts[k]||[0,0]; f[ok?0:1]++; me().facts[k]=f; }
+/* right/wrong per basic fact for the Coach's Corner: keys like "6x7", "5+8", "13-5", "42/6".
+   Only facts with small numbers (a+b, a×b with a,b ≤ 12) — big problems aren't "facts". */
+function factLog(p,ok){ const k=norm(p.key), m=k.match(/^(\d+)([+x\-\/])(\d+)$/); if(!m) return;
+  const a=+m[1], b=+m[3], small= m[2]==='-'?a<=24&&b<=12 : m[2]==='/'?b<=12&&a/b<=12 : a<=12&&b<=12; if(!small) return;
+  const f=me().facts[k]||[0,0]; f[ok?0:1]++; me().facts[k]=f; }
 
 /* =========================================================
    FIELD + PLAYERS (canvas)

@@ -189,3 +189,45 @@ details.parents{margin:16px auto 0; max-width:420px} details.parents summary{cur
 .cta.small{font-size:20px; padding:8px 22px} .cta.danger{background:var(--red); color:#fff}
 .bcode{font-family:'Saira Condensed',monospace; font-weight:900; font-size:26px; letter-spacing:3px; color:var(--gold); user-select:all; -webkit-user-select:all}
 .note.bad{color:#ff9a80; margin:6px auto 0}
+
+/* ---------- Coach's Corner ---------- */
+:root{ --st-good:#0aac23; --st-mid:#fbb315; --st-bad:#dc3c3d; --st-none:rgba(255,255,255,.07); }
+.coachbtn{font-size:17px}
+.coach{display:flex; flex-direction:column; gap:12px; padding-bottom:30px; max-width:760px; margin:0 auto; width:100%}
+.lhead2{display:flex; justify-content:space-between; align-items:center; gap:10px}
+.who2{display:flex; align-items:center; gap:10px} .who2 h1{font-family:'Saira Condensed'; font-weight:900; font-size:40px; margin:0; line-height:1}
+.krow{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
+.ktile{padding:10px 12px; text-align:left}
+.kv{font-family:'Saira Condensed'; font-weight:900; font-size:40px; line-height:1} .kv small{font-size:18px; color:var(--mute)}
+.kl{font-size:12px; font-weight:700; color:#cfd8e3; margin-top:2px} .ks{font-size:11px; color:var(--mute)}
+@media (max-width:480px){ .krow{grid-template-columns:1fr 1fr} .krow .ktile:first-child{grid-column:span 2} }
+.cc{padding:12px 14px; display:flex; flex-direction:column; gap:8px; text-align:left}
+.cc h3{font-family:'Saira Condensed'; font-weight:900; font-size:22px; margin:0; letter-spacing:.5px}
+.lad{display:flex; gap:2px} .lad i{flex:1; height:16px; border-radius:3px; background:rgba(255,255,255,.1)}
+.lad i.done{background:#2a6ea3} .lad i.now{background:var(--gold); box-shadow:0 0 10px rgba(255,210,63,.5)}
+.ladg{position:relative; height:16px; font-family:'Saira Condensed'; font-weight:800; font-size:13px; color:var(--mute)} .ladg span{position:absolute; transform:translateX(-50%)}
+.moves{list-style:none; margin:0; padding:0; font-size:13px; display:flex; flex-direction:column; gap:3px}
+.mv{font-weight:800} .mv.up{color:#5fe08a} .mv.down{color:#ff9a80} .mv.reset{color:var(--mute)} .md{color:var(--mute); font-size:12px}
+.sum{display:flex; flex-direction:column; gap:6px; font-size:14px}
+.sb{display:inline-block; font-weight:800; font-size:12px; padding:2px 8px; border-radius:20px; margin-right:4px; color:#fff}
+.sb.good{background:var(--st-good)} .sb.bad{background:var(--st-bad)} .sb.mid{background:var(--st-mid); color:#0b0b0b}
+.mlist,.glist{display:flex; flex-direction:column; gap:6px}
+.mrow,.grow{display:grid; align-items:center; gap:8px; font-size:14px}
+.mrow{grid-template-columns:minmax(0,1.3fr) minmax(60px,1fr) 52px 26px}
+.mn{font-weight:700; line-height:1.1} .mn small{display:block; font-size:11px; color:var(--mute); font-weight:600}
+.mbar{height:8px; border-radius:4px; background:rgba(255,255,255,.1); overflow:hidden} .mbar i{display:block; height:100%; background:var(--blue); border-radius:4px}
+.mfig{font-family:'Saira Condensed'; font-weight:800; font-size:17px; text-align:right; line-height:1} .mfig small{display:block; font-size:11px; color:var(--mute)}
+.mrow .sb{margin:0; text-align:center; padding:2px 0}
+.grow{grid-template-columns:48px 62px minmax(0,1fr) minmax(40px,.8fr) 46px 18px}
+.gd{color:var(--mute); font-size:12px} .gr{font-family:'Saira Condensed'; font-weight:900; font-size:16px} .gr.W{color:#5fe08a} .gr.L{color:#ff9a80}
+.go{font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .gu{color:#5fe08a; font-size:12px}
+.pchip small{color:var(--mute); font-size:11px; margin-left:4px}
+.ftabs{justify-content:flex-start} .ftabs button{min-width:0; font-size:16px; padding:7px 12px}
+.fgrid{display:grid; grid-template-columns:22px repeat(10,minmax(0,1fr)); gap:3px; max-width:440px}
+.fh{display:flex; align-items:center; justify-content:center; font-family:'Saira Condensed'; font-weight:800; font-size:13px; color:var(--mute); height:24px}
+.fc{aspect-ratio:1; min-height:24px; border-radius:4px; border:0; padding:0; font-weight:900; font-size:13px; color:#fff; display:flex; align-items:center; justify-content:center}
+.fc.good{background:var(--st-good)} .fc.mid{background:var(--st-mid); color:#0b0b0b} .fc.bad{background:var(--st-bad)} .fc.none{background:var(--st-none)}
+.fc.sel{outline:2px solid #fff; outline-offset:1px}
+.fcap{font-size:14px; min-height:20px}
+.flegend{display:flex; flex-wrap:wrap; gap:6px 14px; font-size:12px; color:#cfd8e3} .flegend span{display:flex; align-items:center; gap:5px}
+.flegend .fc{width:16px; height:16px; min-height:0; font-size:10px; aspect-ratio:auto}

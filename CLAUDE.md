@@ -8,7 +8,7 @@ Read this first, then the file in `js/` for whatever you're changing (map in §2
 
 ## 1. How it's built
 
-- **Static site, no build step.** `index.html` is a ~30-line shell: it loads `css/style.css` and nine plain scripts from `js/` **in order** (`teams → core → audio → math → players → field → screens → game → main`). They are classic scripts, not ES modules: they share globals, and a file may only *run* code at load time that uses things from files above it (calling later files from inside functions is fine). Every `<link>`/`<script>` has the same `?v=` number — **bump it on all of them when releasing** so phones don't mix cached old and new files. `snd/` holds recorded audio clips. `archive/` holds parked features that are **not loaded** by the page (currently player cards + locker room; see the header of `archive/player-cards.js` for how to restore). `manifest.json` + `icon-*.png` make "Add to Home Screen" work.
+- **Static site, no build step.** `index.html` is a ~30-line shell: it loads `css/style.css` and ten plain scripts from `js/` **in order** (`teams → core → audio → math → players → field → screens → game → coach → main`). They are classic scripts, not ES modules: they share globals, and a file may only *run* code at load time that uses things from files above it (calling later files from inside functions is fine). Every `<link>`/`<script>` has the same `?v=` number — **bump it on all of them when releasing** so phones don't mix cached old and new files. `snd/` holds recorded audio clips. `archive/` holds parked features that are **not loaded** by the page (currently player cards + locker room; see the header of `archive/player-cards.js` for how to restore). `manifest.json` + `icon-*.png` make "Add to Home Screen" work.
 - **No backend, no accounts, no analytics.** Everything lives in `localStorage` under key `footballMath1`: device settings at the top level, and one entry per kid in `saved.players` (see `js/core.js` for the shape). Progress survives a wipe only through the **backup code** (§3). Keep it this way unless Scott decides otherwise — kids under 13 play this (COPPA).
 - **Rendering:** the field is a `<canvas>` drawn every frame (`draw()` / `drawPlayer()`) with a perspective "broadcast" camera. All UI around it is DOM.
 - **Fonts:** Google Fonts (Saira Condensed, Saira, DotGothic16 for the halftime LED board).
@@ -36,6 +36,7 @@ python3 tests/smoke_test.py        # plays a full automated game in headless Chr
 | `js/field.js` | ~330 | `GAME STATE`, `FIELD + PLAYERS`, `BROADCAST CAMERA`, `PLAY ANIMATIONS` |
 | `js/screens.js` | ~110 | `SCREENS`, `game screen` |
 | `js/game.js` | ~365 | `THE SNAP`, `FLOW`, `defensive looks`, `defense`, `HALFTIME STAT ATTACK`, `end` |
+| `js/coach.js` | ~110 | Coach's Corner (`coachCorner(tab)`): read-only parent view of `me()` |
 | `js/main.js` | 2 | `startScreen()` |
 
 Details by section (search for the banner comment):
@@ -66,7 +67,7 @@ Problem objects look like `{text, answer, key, vis, diff, story?}`. `key` is the
 
 ---
 
-## 3. Gameplay as it stands (v6.3)
+## 3. Gameplay as it stands (v6.4)
 
 - **Offense:** before each snap the defense shows a look (Blitz / Stacked box / Deep coverage) with a coaching tip. Player picks Run (easy math) / Pass (medium) / Deep Bomb (hard). Right answer + right call = big gain; right answer + OK call = small gain; Deep Bomb vs Blitz risks a sack; a **wrong** Deep Bomb can be intercepted. 4th down: go for it, punt, or field goal (in range).
 - **Defense:** opponent drives one play at a time; each snap = one problem. Right answer usually stops the play; the `OPP` setting (Easy/Normal/Tough) sets how often they make a play anyway (`luck` 0.03 / 0.25 / 0.30). Tuned by simulation so a ~95%-accurate kid on Normal gives up roughly one score a game.
@@ -75,6 +76,8 @@ Problem objects look like `{text, answer, key, vis, diff, story?}`. `key` is the
 - **Answers:** Settings → Answers: Auto (Tap for K–1st, Type for 2nd+), Tap (4 big buttons, keys 1–4 on a keyboard), Type (keypad). Tap distractors come from `choicesFor()`: ±1/±2, ±10, swapped digits, neighbor facts (7×6 → 7×7, 6×6), wrong-operation answers; remainders only offer values below the divisor. Never negative, never duplicated.
 - **Players (v6.3):** "Who's playing?" button on the start screen (helmet + name). Up to 6 kids per device, each with their own grade, ladder step, answer mode, opponent level, teams, record and fact stats. Sound, music, quarter length and play clock are shared by the device. Rename/remove are under "Parents" in that dialog. Old saves become "Player 1". Code reads the current kid with `me()`; never put per-kid data at the top level of `saved`.
 - **Backup code ("game password"):** Settings → "<Name>'s backup code", e.g. `HBMM-RV3H-WYDT-82V7`, plus Copy and "Enter a code" (shows what the code holds and asks before replacing the current player's progress). Holds grade, ladder step, both teams, opponent level, answer mode and W-L-T record; **not** the name or fact stats. 64 data bits (scrambled) + CRC-16 in Crockford base-32; any single mistyped character is rejected (tested over 99,200 typos), and O/I/L, lowercase and spaces are accepted. **`CODE_STEP_IDS` and `CODE_TEAMS` are append-only** — reordering them breaks every code already written down. New data goes in the 9 `spare` bits, or bump `CODE_FORMAT` and keep reading old formats.
+- **Coach's Corner (v6.4):** "📋 Coach's Corner" button on the start screen (no parent gate; it's read-only). For the current player: stat tiles (math step, % right in the last 5 games, record), the ladder with recent moves up/down, **How it's going** (per-skill accuracy bars with ✓ going well = 85%+ over 8+ answers / ! working on = under 70% over 6+), **Practice these** (most-missed facts, 2+ tries, under 80%), a **fact map** (× 2–10 and + 1–10; − and ÷ fold into their fact family; ✓ mastered = 3+ right & 80%+, ! needs practice = 2+ misses & under 60%, • learning; tap a square for its numbers), and the last 10 games. Status colors always come with an icon and a word. Data it reads: `facts` (now all four operations, numbers ≤ 12), `skills`, `games`, `ladderLog` — the last three started being recorded in save v4, so older games don't show there.
+- **Title music** is on by default. Phones play no sound until the first tap, so the 🎵 button says "Tap for music" until then and a tap starts it rather than switching it off (that was why it seemed off by default). Save v4 turned music back on once for everyone.
 - **Clock:** 2/3/5-minute quarters, halftime Stat Attack, overtime if tied.
 - **Play clock:** optional, **off by default** — Scott's son may know an answer but type slowly. When on, beating it = +5 yards (offense) / sack (defense). Never a penalty.
 - **Removed on purpose** (Scott found them clutter for a 6-year-old): player cards / locker room / ratings (**parked in `archive/`, planned to return**; card progress was never live, so nothing was lost), Coach's Bonus field-math questions, Momentum + Boost meter, win-probability bar, announcer voice, frequent whistles.
@@ -120,7 +123,15 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 ### Next up candidates (Scott, 2026-11-25)
 - **Backup code ("game password")** — DONE in v6.3 (see §3). Original notes: Like old console passwords: a short code a parent writes down that restores a kid's progress on any device if storage gets wiped (Safari clears it, new phone, etc.). Ideas: encode the essentials only (grade, ladder `stepId`, W-L-T record, answer mode, team; later season + cards) into ~10–14 characters from an unambiguous alphabet (no 0/O/1/I/L), with a checksum so a typo is caught instead of loading garbage. Restore from Settings ("Enter code"). No server needed. Fact stats are too big for a short code — leave them out or offer a separate long "full backup" text.
 - **Player profiles** — DONE in v6.3.
-- **Coach's Corner** (parent view): times-table mastery map from `saved.facts` (green mastered / yellow learning / red needs practice), ladder step history. The old map drawing is in `archive/player-cards.js` (`factState()` + the grid in `lockerRoom()`).
+- **Coach's Corner** — DONE in v6.4. Original idea: times-table mastery map from `saved.facts` (green mastered / yellow learning / red needs practice), ladder step history. The old map drawing is in `archive/player-cards.js` (`factState()` + the grid in `lockerRoom()`).
+
+### Coach's Corner ideas not built yet (2026-11-25)
+- **Parent start-step override** (pick an exact ladder step, not just a grade start).
+- **"Practice the 7s" mode:** a short drill of just the facts in "Practice these", no football. Or bias `gen()` toward them for a game.
+- **Weekly summary:** time played, answers per day, streak of days played.
+- **Share/print the report** (e.g. for a teacher) — render the Corner to a printable page.
+- **Speed per fact** (seconds to answer); mastery = right *and* quick.
+- **A parent gate** if anything editable is ever added here (e.g. "hold for 2 seconds"; a math question won't stop these kids).
 
 ### Later: player cards + season mode (Scott wants both eventually)
 - **Player cards** are parked in `archive/player-cards.js` / `.css` (working; checked against v6). Bring back as a reward layer once the core math loop feels right.
@@ -131,7 +142,7 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 ### Also worth doing (lower priority)
 - **Resume a game** after the app is closed/backgrounded (save `G` + current phase to `localStorage`).
 - **Works offline** — add a small service worker caching `index.html`, `css/`, `js/`, `snd/`, icons, fonts.
-- **Coach's Corner with a times-table mastery map** (Scott likes this; not started) — `saved.facts` still records right/wrong per × fact (`{"6x7":[right,wrong]}`) but nothing shows it. A simple "Coach's report" (the old times-table map idea, without player cards) could read it. The old drawing code (`factState()`, `lockerRoom()`) was deleted in the v6 cleanup; it's in git history (commit `ae9d1df`).
+- **Coach's Corner** — built in v6.4 (see §3). Original note: `saved.facts` still records right/wrong per × fact (`{"6x7":[right,wrong]}`) but nothing shows it. A simple "Coach's report" (the old times-table map idea, without player cards) could read it. The old drawing code (`factState()`, `lockerRoom()`) was deleted in the v6 cleanup; it's in git history (commit `ae9d1df`).
 - **Dad vs kid / sibling mode** — two players, one device, each at their own grade.
 - **Recorded voice clips** (Scott's own) for "Hike!", "Touchdown!", "First down!".
 - Code health: done in v6 (dead code removed, `index.html` split into `css/` + `js/`).

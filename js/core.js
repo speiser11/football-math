@@ -6,10 +6,11 @@ const store={get(){try{return JSON.parse(localStorage.getItem('footballMath1')||
 /* Bump SAVE_VERSION and add a step to migrateSave() (js/players.js) whenever the shape of
    saved data changes. Never patch old data anywhere else.
    saved = { v, sound, music, qLen, pclock  (this device)   cur, players:[ newPlayer() … ] } */
-const SAVE_VERSION=3;
+const SAVE_VERSION=4;
 let saved=Object.assign({sound:true,music:true,qLen:180,pclock:0,cur:0,players:[]},store.get());
 /* everything that belongs to one kid */
-const newPlayer=name=>({name, grade:1, stepId:null, win:[], ansMode:'auto', opp:'normal', homeT:'DET', awayT:'CHI', record:{w:0,l:0,t:0}, facts:{}});
+const newPlayer=name=>({name, grade:1, stepId:null, win:[], ansMode:'auto', opp:'normal', homeT:'DET', awayT:'CHI', record:{w:0,l:0,t:0}, facts:{},
+  skills:{}, games:[], ladderLog:[]});   // Coach's Corner: per-skill [right,wrong], last 30 games, last 30 ladder moves
 const PLAYER_KEYS=Object.keys(newPlayer(''));
 const me=()=>saved.players[saved.cur];   // the player who's playing now
 

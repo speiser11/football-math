@@ -60,7 +60,9 @@ const GRADES=[{l:'K',s:'+ to 10',start:'addsub10'},{l:'1st',s:'+ − to 20',star
 const gradeName=g=>g===0?'K':GRADES[g].l+' grade';   // 'K', '1st grade', …
 const clampS=s=>Math.max(0,Math.min(MAXSTEP,s));
 const curStep=()=>SI[me().stepId] ?? SI[GRADES[me().grade].start];
-function setStep(i){ me().stepId=STEPS[clampS(i)].id; me().win=[]; store.set(saved); }
+function setStep(i,why='reset'){ const id=STEPS[clampS(i)].id, p=me();   // why: 'up' | 'down' | 'reset' (grade change / parent restart)
+  if(id!==p.stepId||why==='reset'){ p.ladderLog.push({d:Date.now(), to:id, why}); while(p.ladderLog.length>30) p.ladderLog.shift(); }
+  p.stepId=id; p.win=[]; store.set(saved); }
 const resetLadder=()=>setStep(SI[GRADES[me().grade].start]);
 /* difficulty band for the non-ladder questions (extra point, field goal, Stat Attack):
    0 = adding and subtracting, 1 = early × and ÷ (×2,5,10 up to ×2–5), 2 = all tables and beyond */
@@ -79,7 +81,7 @@ function adaptRecord(ok){
   const s=curStep();
   if(w.length>=10 && miss<=1 && s<MAXSTEP) ch=1;
   else if(miss>=4 && s>0) ch=-1;   // 4 misses already means ≤60% once the window fills
-  if(ch) setStep(s+ch); else store.set(saved);
+  if(ch) setStep(s+ch, ch>0?'up':'down'); else store.set(saved);
   return ch;
 }
 /* treat 3×4 and 4×3 (or 2+5 and 5+2) as the same fact */

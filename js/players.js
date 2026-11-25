@@ -21,6 +21,9 @@ function migrateSave(){
     }
     for(const k of PLAYER_KEYS) delete saved[k];
   }
+  if(v<4){   // v4: Coach's Corner stats (filled in by fixPlayer). Music was easy to switch off by accident
+    saved.music=true;   // (first tap on a silent title screen turned it off), so turn it back on once.
+  }
   if(!Array.isArray(saved.players)||!saved.players.length) saved.players=[newPlayer('Player 1')];
   saved.players.forEach(fixPlayer);
   if(!(saved.cur>=0&&saved.cur<saved.players.length)) saved.cur=0;
@@ -39,7 +42,10 @@ function fixPlayer(p){
   if(!TEAMS[p.homeT]) p.homeT='DET';
   if(!TEAMS[p.awayT]||p.awayT===p.homeT) p.awayT=p.homeT==='CHI'?'DET':'CHI';
   const rc=p.record; p.record={w:Math.max(0,rc.w|0),l:Math.max(0,rc.l|0),t:Math.max(0,rc.t|0)};
-  if(typeof p.facts!=='object') p.facts={};
+  if(typeof p.facts!=='object'||!p.facts) p.facts={};
+  if(typeof p.skills!=='object'||!p.skills) p.skills={};
+  if(!Array.isArray(p.games)) p.games=[];
+  if(!Array.isArray(p.ladderLog)) p.ladderLog=[];
   return p;
 }
 

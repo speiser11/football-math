@@ -26,6 +26,8 @@
   .label{font-family:'Saira Condensed'; font-weight:700; font-size:12px; letter-spacing:2px; color:var(--mute); text-transform:uppercase}
 
   /* ---------- start ---------- */
+  .tsnd{position:fixed; top:max(10px,env(safe-area-inset-top)); right:max(10px,env(safe-area-inset-right)); z-index:5; display:flex; flex-direction:column; align-items:center; gap:1px; width:64px; padding:6px 0 5px; border-radius:14px; background:var(--glass); border:1px solid var(--line); font-size:26px; line-height:1}
+  .tsnd small{font-family:'Saira'; font-weight:600; font-size:10px; color:var(--mute)}
   .start{display:flex; flex-direction:column; gap:16px; align-items:center; text-align:center; padding:14px 4px 30px}
   .title{font-family:'Saira Condensed'; font-weight:900; font-style:italic; font-size:clamp(52px,12vw,104px); line-height:.86; letter-spacing:1px; margin:6px 0 0}
   .title span{display:block; color:var(--gold)}
@@ -329,8 +331,8 @@ const sfxOn=()=>saved.sound!==false;
 let MASTER=null, NOISE=null, BED=null;
 function out(){ const c=ac(); if(!c) return null; if(!MASTER){ const comp=c.createDynamicsCompressor(); comp.threshold.value=-16; comp.knee.value=10; comp.ratio.value=4; comp.attack.value=.004; comp.release.value=.25; const g=c.createGain(); g.gain.value=.95; comp.connect(g); g.connect(c.destination); MASTER=comp; } return MASTER; }
 function noiseBuf(){ const c=ac(); if(!NOISE){ const n=c.sampleRate*2; NOISE=c.createBuffer(1,n,c.sampleRate); const d=NOISE.getChannelData(0); for(let i=0;i<n;i++) d[i]=Math.random()*2-1; } return NOISE; }
-function nz({dur=.3,type='bandpass',f=1000,f2=null,q=.7,v=.3,a=.01,when=0}={}){ const c=ac(); if(!c||!sfxOn())return; const t=c.currentTime+when; const s=c.createBufferSource(); s.buffer=noiseBuf(); s.loop=true; const fl=c.createBiquadFilter(); fl.type=type; fl.frequency.setValueAtTime(f,t); if(f2) fl.frequency.exponentialRampToValueAtTime(f2,t+dur); fl.Q.value=q; const g=c.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(Math.max(.0002,v),t+a); g.gain.exponentialRampToValueAtTime(.0001,t+dur); s.connect(fl); fl.connect(g); g.connect(out()); s.start(t,Math.random()*1.5); s.stop(t+dur+.05); }
-function osc({f=440,f2=null,dur=.3,type='sine',v=.2,a=.005,when=0,lp=null}={}){ const c=ac(); if(!c||!sfxOn())return; const t=c.currentTime+when; const o=c.createOscillator(); o.type=type; o.frequency.setValueAtTime(f,t); if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+dur); const g=c.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(v,t+a); g.gain.exponentialRampToValueAtTime(.0001,t+dur); let n=o; if(lp){ const fl=c.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value=lp; o.connect(fl); n=fl; } n.connect(g); g.connect(out()); o.start(t); o.stop(t+dur+.05); }
+function nz({dur=.3,type='bandpass',f=1000,f2=null,q=.7,v=.3,a=.01,when=0,dest=null}={}){ const c=ac(); if(!c||!sfxOn())return; const t=c.currentTime+when; const s=c.createBufferSource(); s.buffer=noiseBuf(); s.loop=true; const fl=c.createBiquadFilter(); fl.type=type; fl.frequency.setValueAtTime(f,t); if(f2) fl.frequency.exponentialRampToValueAtTime(f2,t+dur); fl.Q.value=q; const g=c.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(Math.max(.0002,v),t+a); g.gain.exponentialRampToValueAtTime(.0001,t+dur); s.connect(fl); fl.connect(g); g.connect(dest||out()); s.start(t,Math.random()*1.5); s.stop(t+dur+.05); }
+function osc({f=440,f2=null,dur=.3,type='sine',v=.2,a=.005,when=0,lp=null,dest=null}={}){ const c=ac(); if(!c||!sfxOn())return; const t=c.currentTime+when; const o=c.createOscillator(); o.type=type; o.frequency.setValueAtTime(f,t); if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+dur); const g=c.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(v,t+a); g.gain.exponentialRampToValueAtTime(.0001,t+dur); let n=o; if(lp){ const fl=c.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value=lp; o.connect(fl); n=fl; } n.connect(g); g.connect(dest||out()); o.start(t); o.stop(t+dur+.05); }
 function tone(f,d,type='sine',v=.15,when=0){ osc({f,dur:d,type,v,when}); }
 function whistle_syn(){ const c=ac(); if(!c||!sfxOn())return; [[0,.18],[.26,.42]].forEach(([w,len])=>{ const t=c.currentTime+w; const o=c.createOscillator(); o.frequency.value=2850; const l=c.createOscillator(); l.frequency.value=27; const lg=c.createGain(); lg.gain.value=150; l.connect(lg); lg.connect(o.frequency); const g=c.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.08,t+.02); g.gain.setValueAtTime(.08,t+len-.04); g.gain.exponentialRampToValueAtTime(.0001,t+len); o.connect(g); g.connect(out()); o.start(t); l.start(t); o.stop(t+len+.05); l.stop(t+len+.05); }); }
 function hutVoice(when=0){ const c=ac(); if(!c||!sfxOn())return; const t=c.currentTime+when; const o=c.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(155,t); o.frequency.exponentialRampToValueAtTime(100,t+.15);
@@ -427,18 +429,21 @@ const MUS={on:false,timer:null,next:0,ev:[],len:0};
   }
   MUS.ev=ev.sort((a,b)=>a.t-b.t); MUS.len=32*B;
 })();
-function musicTick(){ const c=ac(); if(!c||!MUS.on) return; if(!sfxOn()){ return; }
+function musicTick(){ const c=ac(); if(!c||!MUS.on) return; if(!sfxOn()){ musicStop(); return; } const dest=musBus();
   const now=c.currentTime, ahead=now+.6;
   while(MUS.next<ahead){ const loopStart=MUS.next;
     // schedule the events that fall in [MUS.next, MUS.next+chunk)
     const chunkEnd=Math.min(ahead, MUS.base+MUS.len*(MUS.loop+1));
     for(const e of MUS.ev){ const at=MUS.base+MUS.len*MUS.loop+e.t; if(at<loopStart||at>=chunkEnd) continue; const w=Math.max(0,at-now);
-      if(e.dr==='kick') osc({f:110,f2:45,dur:.14,v:.14,when:w}); else if(e.dr==='snare') nz({dur:.1,type:'highpass',f:1800,v:.05,a:.002,when:w}); else if(e.dr==='hat') nz({dur:.025,type:'highpass',f:7000,v:.018,a:.001,when:w});
-      else osc({f:e.f,dur:e.d,type:e.type,v:e.v,a:.006,when:w}); }
+      if(e.dr==='kick') osc({f:110,f2:45,dur:.14,v:.14,when:w,dest}); else if(e.dr==='snare') nz({dur:.1,type:'highpass',f:1800,v:.05,a:.002,when:w,dest}); else if(e.dr==='hat') nz({dur:.025,type:'highpass',f:7000,v:.018,a:.001,when:w,dest});
+      else osc({f:e.f,dur:e.d,type:e.type,v:e.v,a:.006,when:w,dest}); }
     MUS.next=chunkEnd; if(MUS.next>=MUS.base+MUS.len*(MUS.loop+1)) MUS.loop++;
   } }
-function musicStart(){ const c=ac(); if(!c||MUS.on) return; MUS.on=true; MUS.base=c.currentTime+.15; MUS.next=MUS.base; MUS.loop=0; MUS.timer=setInterval(musicTick,150); musicTick(); }
-function musicStop(){ MUS.on=false; clearInterval(MUS.timer); }
+let MUSBUS=null;
+function musBus(){ if(!MUSBUS){ MUSBUS=AC.createGain(); MUSBUS.connect(out()); } return MUSBUS; }
+function musicStart(){ if(!sfxOn()) return; const c=ac(); if(!c||MUS.on) return; MUS.on=true; MUS.base=c.currentTime+.15; MUS.next=MUS.base; MUS.loop=0; MUS.timer=setInterval(musicTick,150); musicTick(); }
+function musicStop(){ MUS.on=false; clearInterval(MUS.timer);
+  if(MUSBUS){ const b=MUSBUS; MUSBUS=null; try{ b.gain.setTargetAtTime(0,AC.currentTime,.02); setTimeout(()=>{ try{b.disconnect()}catch(e){} },200); }catch(e){} } }   // silences notes already queued
 let unlocked=false, silentEl=null;
 /* iPhone: 'playback' mode plays sounds through the silent switch but can silence the voice.
    So only use it when the announcer is off. */
@@ -962,6 +967,7 @@ function startScreen(){
   const rec=saved.record, h=TEAMS[saved.homeT], a=TEAMS[saved.awayT];
   $('#app').innerHTML=`
   <div class="start">
+    <button class="tsnd" id="tsnd" aria-label="Sound on or off">${saved.sound?'🔊':'🔇'}<small>${saved.sound?'Sound on':'Sound off'}</small></button>
     <h1 class="title">FOOTBALL<span>MATH</span></h1>
     <p class="tagline">Solve it to run the play. Bigger plays, harder math.</p>
     <div class="matchup">
@@ -980,14 +986,15 @@ function startScreen(){
       <div class="setrow"><span class="label">Answers</span>${segHTML('am',[{v:'auto',l:'Auto',s:'tap for K–1st'},{v:'tap',l:'Tap',s:'4 big buttons'},{v:'type',l:'Type',s:'number pad'}],saved.ansMode)}</div>
       <div class="setrow"><span class="label">Math ladder</span><button class="ghost" id="ladreset">Restart at ${GRADES[saved.grade].l} grade start</button>
         <div class="note">The math moves up a step after 9 of 10 right, and down a step after 4 misses. Progress is saved on this device.</div></div>
-      <div class="setrow"><span class="label">Sound</span>${segHTML('snd',[{v:true,l:'On'},{v:false,l:'Off'}],saved.sound)}</div>
     </details>
     <div class="record">Season record: ${rec.w}–${rec.l}${rec.t?`–${rec.t}`:''}</div>
   </div>`;
   $('#grade').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const g=+b.dataset.v; if(g===saved.grade) return;
     saved.grade=g; saved.step=GRADES[g].start; saved.win=[]; store.set(saved); startScreen(); };
   $('#ladreset').onclick=()=>{ saved.step=GRADES[saved.grade].start; saved.win=[]; store.set(saved); $('#ladder').innerHTML=ladderText(); };
-  bindSeg('am','ansMode',0); bindSeg('opp','opp',0); $('#snd').addEventListener('click',()=>{ if(saved.sound){ musicStart(); } else musicStop(); }); bindSeg('qlen','qLen',1); bindSeg('pc','pclock',1); bindSeg('snd','sound',0);
+  bindSeg('am','ansMode',0); bindSeg('opp','opp',0); bindSeg('qlen','qLen',1); bindSeg('pc','pclock',1);
+  $('#tsnd').onclick=()=>{ saved.sound=!saved.sound; store.set(saved); if(saved.sound){ ac(); musicStart(); } else musicStop();
+    $('#tsnd').innerHTML=`${saved.sound?'🔊':'🔇'}<small>${saved.sound?'Sound on':'Sound off'}</small>`; };
   $('#pickH').onclick=()=>teamPicker('homeT'); $('#pickA').onclick=()=>teamPicker('awayT');
   $('#kick').onclick=()=>{ musicStop(); ac(); unlockAudio(); newGame(); gameScreen(); horn(); roar(1.1,2.6); setTimeout(whistle,1200); setTimeout(()=>crowdBed(true),1500); setTimeout(()=>startDrive(25),900); };
 }

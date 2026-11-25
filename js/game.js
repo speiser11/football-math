@@ -11,7 +11,7 @@ function ask(p,opts={}){
     dim(true);
     const show=()=>{
       $('#panel').innerHTML=`<div class="snap glass">
-        <div class="snaphead"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="badge" style="background:${opts.color||'#13385a'}">${opts.title||''}</span><span class="sit">${opts.sit||''}</span></div>${opts.extra||''}</div>
+        <div class="snaphead"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="badge" style="background:${opts.color||'#13385a'}">${opts.title||''}</span><span class="sit">${opts.sit||''}</span>${p.focus?'<span class="focusb">⭐ Practice fact</span>':''}</div>${opts.extra||''}</div>
         ${opts.clock?`<div class="shot"><span class="label">Play clock</span><div class="tr"><div class="fl" id="pcf"></div></div><span class="n" id="pcn"></span></div>`:''}
         <div class="eqrow">${p.story?`<div class="eq story">${p.text}</div>`:`<div class="eq">${p.text}</div><div class="eqs">=</div>`}<div class="ans" id="ans">${val||'&nbsp;'}</div></div>
         ${p.vis&&!p.story?`<div class="film"><button id="film">${hint?'Hide film room':'Film room: show me'}</button></div>`:''}
@@ -36,7 +36,7 @@ function ask(p,opts={}){
       if(done) return; done=true;
       clearInterval(timer); document.removeEventListener('keydown',onKey);
       const ok=+val===p.answer, fast=ok&&beat; let up=0;
-      up=recordAnswer(p,ok);
+      if(!opts.noStat) up=recordAnswer(p,ok);   // noStat: the practice drill scores its own answers
       if(up>0) setTimeout(()=>{ if(gid===GAME){ lower(`⬆ LEVEL UP! Now: ${STEPS[curStep()].tag}`,'good'); chip([[76,.25],[81,.25],[88,.6]],220,'square',.05); } },250);
       if(ok){ ding(); $('#panel').innerHTML=`<div class="fb glass"><div class="yay">${pick(['YES!','CORRECT!','NAILED IT!','BOOM!','MONEY!'])}</div><div class="eqline">${p.story?'':p.text+' = '}${p.answer}</div>${fast&&opts.burstText?`<div class="burst">⚡ ${opts.burstText}</div>`:''}${up>0?`<div class="burst">⬆ LEVEL UP!</div>`:''}</div>`;
         setTimeout(()=>{ if(gid===GAME){ dim(false); resolve({ok,fast}); } },fast?1100:750); }

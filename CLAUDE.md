@@ -67,7 +67,7 @@ Problem objects look like `{text, answer, key, vis, diff, story?}`. `key` is the
 
 ---
 
-## 3. Gameplay as it stands (v6.4)
+## 3. Gameplay as it stands (v6.5)
 
 - **Offense:** before each snap the defense shows a look (Blitz / Stacked box / Deep coverage) with a coaching tip. Player picks Run (easy math) / Pass (medium) / Deep Bomb (hard). Right answer + right call = big gain; right answer + OK call = small gain; Deep Bomb vs Blitz risks a sack; a **wrong** Deep Bomb can be intercepted. 4th down: go for it, punt, or field goal (in range).
 - **Defense:** opponent drives one play at a time; each snap = one problem. Right answer usually stops the play; the `OPP` setting (Easy/Normal/Tough) sets how often they make a play anyway (`luck` 0.03 / 0.25 / 0.30). Tuned by simulation so a ~95%-accurate kid on Normal gives up roughly one score a game.
@@ -77,6 +77,9 @@ Problem objects look like `{text, answer, key, vis, diff, story?}`. `key` is the
 - **Players (v6.3):** "Who's playing?" button on the start screen (helmet + name). Up to 6 kids per device, each with their own grade, ladder step, answer mode, opponent level, teams, record and fact stats. Sound, music, quarter length and play clock are shared by the device. Rename/remove are under "Parents" in that dialog. Old saves become "Player 1". Code reads the current kid with `me()`; never put per-kid data at the top level of `saved`.
 - **Backup code ("game password"):** Settings → "<Name>'s backup code", e.g. `HBMM-RV3H-WYDT-82V7`, plus Copy and "Enter a code" (shows what the code holds and asks before replacing the current player's progress). Holds grade, ladder step, both teams, opponent level, answer mode and W-L-T record; **not** the name or fact stats. 64 data bits (scrambled) + CRC-16 in Crockford base-32; any single mistyped character is rejected (tested over 99,200 typos), and O/I/L, lowercase and spaces are accepted. **`CODE_STEP_IDS` and `CODE_TEAMS` are append-only** — reordering them breaks every code already written down. New data goes in the 9 `spare` bits, or bump `CODE_FORMAT` and keep reading old formats.
 - **Coach's Corner (v6.4):** "📋 Coach's Corner" button on the start screen (no parent gate; it's read-only). For the current player: stat tiles (math step, % right in the last 5 games, record), the ladder with recent moves up/down, **How it's going** (per-skill accuracy bars with ✓ going well = 85%+ over 8+ answers / ! working on = under 70% over 6+), **Practice these** (most-missed facts, 2+ tries, under 80%), a **fact map** (× 2–10 and + 1–10; − and ÷ fold into their fact family; ✓ mastered = 3+ right & 80%+, ! needs practice = 2+ misses & under 60%, • learning; tap a square for its numbers), and the last 10 games. Status colors always come with an icon and a word. Data it reads: `facts` (now all four operations, numbers ≤ 12), `skills`, `games`, `ladderLog` — the last three started being recorded in save v4, so older games don't show there.
+- **Practice facts (v6.5):** `troubleFacts()` (math.js) = the kid's most-missed facts (2+ tries, under 80%), shown in Coach's Corner → "Practice these". Two ways they get used:
+  - **In games** (per-kid switch `focus`, on by default): `gen()` serves one on `FOCUS_RATE` = 25% of Run/Pass/defense problems (never Deep Bomb), built by `factProblem(key)`, with a "⭐ Practice fact" badge. They have `focus:true, adapt:false`: counted in `facts` and game stats, **never in the ladder window**, so working on weak facts can't drop his step.
+  - **Practice drill** (`practiceDrill()` in coach.js): "⭐ Practice drill" button → "Practice Field": 10 questions from the list, no football, a missed fact comes back later in the same drill, 🏈 per right answer. Uses `ask(p,{noStat:true})` and logs only `facts` (no game stats, no ladder, no record).
 - **Title music** is on by default. Phones play no sound until the first tap, so the 🎵 button says "Tap for music" until then and a tap starts it rather than switching it off (that was why it seemed off by default). Save v4 turned music back on once for everyone.
 - **Clock:** 2/3/5-minute quarters, halftime Stat Attack, overtime if tied.
 - **Play clock:** optional, **off by default** — Scott's son may know an answer but type slowly. When on, beating it = +5 yards (offense) / sack (defense). Never a penalty.
@@ -127,7 +130,7 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 
 ### Coach's Corner ideas not built yet (2026-11-25)
 - **Parent start-step override** (pick an exact ladder step, not just a grade start).
-- **"Practice the 7s" mode:** a short drill of just the facts in "Practice these", no football. Or bias `gen()` toward them for a game.
+- ~~"Practice the 7s" mode~~ — DONE in v6.5 (drill + practice facts in games).
 - **Weekly summary:** time played, answers per day, streak of days played.
 - **Share/print the report** (e.g. for a teacher) — render the Corner to a printable page.
 - **Speed per fact** (seconds to answer); mastery = right *and* quick.

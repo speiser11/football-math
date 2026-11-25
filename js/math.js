@@ -86,14 +86,30 @@ function adaptRecord(ok){
 }
 /* treat 3×4 and 4×3 (or 2+5 and 5+2) as the same fact */
 const norm=k=>{ if(!k) return ''; const m=k.match(/^(\d+)([+x])(\d+)$/); return m?[+m[1],+m[3]].sort((a,b)=>a-b).join(m[2]):k; };
+/* PRACTICE FACTS — the kid's trouble facts (Coach's Corner "Practice these", the drill, and focus mode in games) */
+function troubleFacts(p=me(),n=10){   // most-missed first; 2+ tries and under 80% right
+  return Object.entries(p.facts).filter(([k,f])=>f[1]>0&&f[0]+f[1]>=2&&f[0]/(f[0]+f[1])<.8)
+    .sort((a,b)=>b[1][1]-a[1][1]||a[1][0]-b[1][0]).slice(0,n).map(([k])=>k);
+}
+function factProblem(k){   // "6x7" | "5+8" | "13-5" | "42/6" → a problem object like the generators make
+  const m=k.match(/^(\d+)([+x\-\/])(\d+)$/); if(!m) return null; const a=+m[1], b=+m[3];
+  if(m[2]==='+') return Math.random()<.5?add(a,b):add(b,a);
+  if(m[2]==='-') return sub(a,b,a>20?'sub2':'sub');
+  if(m[2]==='x'){ const [x,y]=Math.random()<.5?[a,b]:[b,a]; return {text:`${x} × ${y}`, answer:x*y, key:`${x}x${y}`, vis:{k:'mul',a:x,b:y}}; }
+  return {text:`${a} ÷ ${b}`, answer:a/b, key:k, vis:{k:'div',a,b}};
+}
+const FOCUS_RATE=.25;   // share of Run / Pass / defense problems that are practice facts (when the kid has some)
 function gen(diff){
   G.n=(G.n||0)+1; const recent=G.recent||(G.recent=[]);
   // missed facts come back, but only after at least 4 other problems
   const pool=(G.redo[diff]||[]).filter(x=>G.n-(x.missN||0)>=4 && !recent.includes(norm(x.key)));
   let p;
+  const tf=(me().focus&&diff!=='hard')?troubleFacts().filter(k=>!recent.includes(norm(k))):[];
+  if(tf.length && Math.random()<FOCUS_RATE){   // practice fact: counts in the fact map, never moves the ladder
+    p=factProblem(pick(tf)); p.diff=diff; p.focus=true; recent.push(norm(p.key)); if(recent.length>12) recent.shift(); return p; }
   if(pool.length && Math.random()<.4) p={...pick(pool)};
   else { const st=stepFor(diff); let tries=0; do{ p=STEPS[st].f(); tries++; }while(recent.includes(norm(p.key)) && tries<30); p.diff=diff; p.step=st; }
-  p.adapt=true;
+  p.adapt=!p.focus;   // a replayed practice fact stays out of the ladder too
   recent.push(norm(p.key)); if(recent.length>12) recent.shift();
   return p;
 }

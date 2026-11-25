@@ -59,11 +59,16 @@ function coachCorner(tab='mul'){
     :`<div class="note">Play a game and each kind of problem will show up here.</div>`}
   </section>`;
 
-  /* 4. practice list: most-missed facts still under 80% */
-  const prac=Object.entries(p.facts).filter(([k,f])=>f[1]>0&&f[0]+f[1]>=2&&f[0]/(f[0]+f[1])<.8).sort((a,b)=>b[1][1]-a[1][1]||a[1][0]-b[1][0]).slice(0,10);
+  /* 4. practice list + the two ways to use it: focus facts in games, and the drill */
+  const prac=troubleFacts(p,10);
   const practice=`<section class="cc glass"><h3>Practice these</h3>
-    ${prac.length?`<div class="pchips">${prac.map(([k,f])=>`<span class="pchip">${factText(k)} <small>${f[0]} of ${f[0]+f[1]}</small></span>`).join('')}</div><div class="note" style="max-width:none">Facts missed most often (right / tries, at least 2 tries). Good for a few minutes of flash cards.</div>`
-    :`<div class="note">No trouble facts right now.</div>`}</section>`;
+    ${prac.length?`<div class="pchips">${prac.map(k=>{ const f=p.facts[k]; return `<span class="pchip">${factText(k)} <small>${f[0]} of ${f[0]+f[1]}</small></span>`; }).join('')}</div>
+      <div class="note" style="max-width:none">Facts missed most often (right / tries, at least 2 tries).</div>
+      <div class="prow2"><button class="cta small" id="drill">⭐ Practice drill</button><span class="note" style="margin:0">10 quick questions from this list, no football.</span></div>`
+    :`<div class="note">No trouble facts right now.</div>`}
+    <div class="prow2"><span class="label" style="margin:0">Practice facts in games</span>${segHTML('focus',[{v:true,l:'On'},{v:false,l:'Off'}],p.focus)}</div>
+    <div class="note" style="max-width:none">When on, about 1 in 4 Run, Pass and defense plays uses a fact from this list (marked ⭐ Practice fact). They count in the fact map but never move the math ladder.</div>
+  </section>`;
 
   /* 5. fact maps */
   const fam=familyFacts(p.facts), isMul=tab==='mul', src=isMul?fam.mul:fam.add, lo=isMul?2:1, N=isMul?9:10, sym=isMul?'×':'+';   // the game never asks ×1
@@ -93,8 +98,41 @@ function coachCorner(tab='mul'){
   </div>`;
   window.scrollTo(0,0);
   $('#cback').onclick=startScreen;
+  bindSeg('focus','focus',0,p); if($('#drill')) $('#drill').onclick=()=>practiceDrill();
   $('.ftabs').onclick=e=>{ const b=e.target.closest('button'); if(b) coachCorner(b.dataset.tab); };
   $('.fgrid').onclick=e=>{ const c=e.target.closest('.fc'); if(!c) return; const a=+c.dataset.a, b=+c.dataset.b, f=src[Math.min(a,b)+'_'+Math.max(a,b)], k=factStatus(f);
     document.querySelectorAll('.fgrid .fc.sel').forEach(x=>x.classList.remove('sel')); c.classList.add('sel');
     $('#fcap').innerHTML=`<b>${a} ${sym} ${b} = ${isMul?a*b:a+b}</b> · ${ST[k].icon} ${ST[k].word}${f?` · right ${f[0]}, missed ${f[1]}`:''}`; };
+}
+
+/* ---------- the practice drill: 10 questions from the trouble list, missed ones come back ---------- */
+async function practiceDrill(){
+  const p=me(); let list=troubleFacts(p,10);
+  if(!list.length) return coachCorner();
+  const LEN=10, queue=[]; while(queue.length<LEN) queue.push(...list.slice().sort(()=>Math.random()-.5)); queue.length=LEN;
+  G={quit:true, homeT:p.homeT, awayT:p.awayT}; GAME++; const gid=GAME; let right=0, done=0;   // no game running; confetti() reads G.homeT
+  const marks=[];   // ✓ / ✗ per question
+  $('#app').innerHTML=`<div class="coach drill">
+    <div class="lhead2"><div><div class="label" style="color:#7fd3ff">Practice drill · ${esc(p.name)}</div><h1 class="dh">PRACTICE FIELD</h1></div><button class="ghost" id="dback">◀ Back</button></div>
+    <div class="dprog" id="dprog"></div>
+    <div class="panel" id="panel"></div></div>`;
+  $('#dback').onclick=()=>{ GAME++; coachCorner(); };
+  const prog=()=>{ const el=$('#dprog'); if(el) el.innerHTML=Array.from({length:LEN},(_,i)=>`<i class="${marks[i]||''}">${marks[i]==='ok'?'🏈':''}</i>`).join(''); };
+  for(let i=0;i<LEN;i++){
+    prog();
+    const k=queue[i], q=factProblem(k); q.key=q.key||k;
+    const res=await ask(q,{title:'PRACTICE', color:'#2a6ea3', sit:`${i+1} of ${LEN}`, contText:'Next ▶', noStat:true});
+    if(gid!==GAME) return;   // left the drill
+    factLog(q,res.ok); store.set(saved); done++;
+    if(res.ok) right++; else if(i+2<LEN) queue.splice(i+2+Math.floor(Math.random()*(LEN-i-2)),1,k);   // a miss comes back later in this drill
+    marks[i]=res.ok?'ok':'no';
+  }
+  prog();
+  const left=troubleFacts(p,10).length;
+  $('#panel').innerHTML=`<div class="fb glass"><div class="yay">${right>=8?'GREAT PRACTICE!':right>=5?'NICE WORK!':'GOOD EFFORT!'}</div>
+    <div class="eqline">${right} of ${LEN} right</div>
+    <div class="note" style="margin:4px auto">${left?`${left} fact${left===1?'':'s'} still on the practice list.`:'Practice list is empty. All caught up!'}</div>
+    <div class="extras" style="margin-top:8px"><button class="ghost" id="dagain">Practice again</button><button class="cta small" id="dcoach">Coach's Corner</button></div></div>`;
+  if(right>=8){ fanfare(); confetti(); } else ding();
+  $('#dagain').onclick=()=>practiceDrill(); $('#dcoach').onclick=()=>coachCorner();
 }

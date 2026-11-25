@@ -27,6 +27,7 @@
 
   /* ---------- start ---------- */
   .tsnd{position:fixed; top:max(10px,env(safe-area-inset-top)); right:max(10px,env(safe-area-inset-right)); z-index:5; display:flex; flex-direction:column; align-items:center; gap:1px; width:64px; padding:6px 0 5px; border-radius:14px; background:var(--glass); border:1px solid var(--line); font-size:26px; line-height:1}
+  .tsnd.off{opacity:.55; filter:grayscale(1)}
   .tsnd small{font-family:'Saira'; font-weight:600; font-size:10px; color:var(--mute)}
   .start{display:flex; flex-direction:column; gap:16px; align-items:center; text-align:center; padding:14px 4px 30px}
   .title{font-family:'Saira Condensed'; font-weight:900; font-style:italic; font-size:clamp(52px,12vw,104px); line-height:.86; letter-spacing:1px; margin:6px 0 0}
@@ -307,7 +308,7 @@ const RS=k=>ROSTERS[k]||ROSTERS.DET;
 
 /* ---------- saved settings (safe) ---------- */
 const store={get(){try{return JSON.parse(localStorage.getItem('footballMath1')||'{}')}catch(e){return {}}},set(v){try{localStorage.setItem('footballMath1',JSON.stringify(v))}catch(e){}}};
-let saved=Object.assign({record:{w:0,l:0,t:0},grade:1,qLen:180,ansMode:'auto',win:[],pclock:0,sound:true,opp:'normal',homeT:'DET',awayT:'CHI',cards:{},facts:{}},store.get());
+let saved=Object.assign({record:{w:0,l:0,t:0},grade:1,qLen:180,ansMode:'auto',win:[],music:true,pclock:0,sound:true,opp:'normal',homeT:'DET',awayT:'CHI',cards:{},facts:{}},store.get());
 saved.cards=saved.cards||{}; saved.facts=saved.facts||{}; delete saved.level;
 if(!(saved.grade>=0&&saved.grade<=4)) saved.grade=1;
 if(typeof saved.step!=='number') saved.step=[2,6,10,14,18][saved.grade];   // = GRADES[grade].start
@@ -327,6 +328,7 @@ const fmt=s=>{s=Math.max(0,Math.round(s)); return `${Math.floor(s/60)}:${String(
 let AC=null;
 function ac(){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(AC&&AC.state==='suspended')AC.resume(); return AC; }
 const sfxOn=()=>saved.sound!==false;
+const musicOn=()=>sfxOn()&&saved.music!==false;   // title theme: needs Sound on AND Music on
 /* ---------- stadium sound engine (all synthesized) ---------- */
 let MASTER=null, NOISE=null, BED=null;
 function out(){ const c=ac(); if(!c) return null; if(!MASTER){ const comp=c.createDynamicsCompressor(); comp.threshold.value=-16; comp.knee.value=10; comp.ratio.value=4; comp.attack.value=.004; comp.release.value=.25; const g=c.createGain(); g.gain.value=.95; comp.connect(g); g.connect(c.destination); MASTER=comp; } return MASTER; }
@@ -429,7 +431,7 @@ const MUS={on:false,timer:null,next:0,ev:[],len:0};
   }
   MUS.ev=ev.sort((a,b)=>a.t-b.t); MUS.len=32*B;
 })();
-function musicTick(){ const c=ac(); if(!c||!MUS.on) return; if(!sfxOn()){ musicStop(); return; } const dest=musBus();
+function musicTick(){ const c=ac(); if(!c||!MUS.on) return; if(!musicOn()){ musicStop(); return; } const dest=musBus();
   const now=c.currentTime, ahead=now+.6;
   while(MUS.next<ahead){ const loopStart=MUS.next;
     // schedule the events that fall in [MUS.next, MUS.next+chunk)
@@ -441,7 +443,7 @@ function musicTick(){ const c=ac(); if(!c||!MUS.on) return; if(!sfxOn()){ musicS
   } }
 let MUSBUS=null;
 function musBus(){ if(!MUSBUS){ MUSBUS=AC.createGain(); MUSBUS.connect(out()); } return MUSBUS; }
-function musicStart(){ if(!sfxOn()) return; const c=ac(); if(!c||MUS.on) return; MUS.on=true; MUS.base=c.currentTime+.15; MUS.next=MUS.base; MUS.loop=0; MUS.timer=setInterval(musicTick,150); musicTick(); }
+function musicStart(){ if(!musicOn()) return; const c=ac(); if(!c||MUS.on) return; MUS.on=true; MUS.base=c.currentTime+.15; MUS.next=MUS.base; MUS.loop=0; MUS.timer=setInterval(musicTick,150); musicTick(); }
 function musicStop(){ MUS.on=false; clearInterval(MUS.timer);
   if(MUSBUS){ const b=MUSBUS; MUSBUS=null; try{ b.gain.setTargetAtTime(0,AC.currentTime,.02); setTimeout(()=>{ try{b.disconnect()}catch(e){} },200); }catch(e){} } }   // silences notes already queued
 let unlocked=false, silentEl=null;
@@ -963,11 +965,11 @@ function ladderText(){ const s=curStep(), st=STEPS[s];
   return `Math step <b>${s+1}</b> of ${STEPS.length}: <b>${st.tag}</b> · ${GRADES[st.g].l==='K'?'K':GRADES[st.g].l+' grade'} level`; }
 const useTap=()=>saved.ansMode==='tap'||(saved.ansMode!=='type'&&saved.grade<=1);
 function startScreen(){
-  G.quit=true; GAME++; ANIM=null; crowdBed(false); if(AC) musicStart();
+  G.quit=true; GAME++; ANIM=null; crowdBed(false); if(AC) musicStart(); else musicStop();
   const rec=saved.record, h=TEAMS[saved.homeT], a=TEAMS[saved.awayT];
   $('#app').innerHTML=`
   <div class="start">
-    <button class="tsnd" id="tsnd" aria-label="Sound on or off">${saved.sound?'🔊':'🔇'}<small>${saved.sound?'Sound on':'Sound off'}</small></button>
+    <button class="tsnd" id="tsnd" aria-label="Title music on or off"></button>
     <h1 class="title">FOOTBALL<span>MATH</span></h1>
     <p class="tagline">Solve it to run the play. Bigger plays, harder math.</p>
     <div class="matchup">
@@ -983,6 +985,7 @@ function startScreen(){
       <div class="setrow"><span class="label">Quarter length</span>${segHTML('qlen',[{v:120,l:'2 min',s:'quick'},{v:180,l:'3 min',s:'regular'},{v:300,l:'5 min',s:'long'}],saved.qLen)}</div>
       <div class="setrow"><span class="label">Play clock</span>${segHTML('pc',[{v:0,l:'Off'},{v:20,l:'20 sec'},{v:10,l:'10 sec'}],saved.pclock)}
         <div class="note">Answer before the clock runs out for a +5 yard burst. Running out never hurts.</div></div>
+      <div class="setrow"><span class="label">Sound</span>${segHTML('snd',[{v:true,l:'On'},{v:false,l:'Off'}],saved.sound)}</div>
       <div class="setrow"><span class="label">Answers</span>${segHTML('am',[{v:'auto',l:'Auto',s:'tap for K–1st'},{v:'tap',l:'Tap',s:'4 big buttons'},{v:'type',l:'Type',s:'number pad'}],saved.ansMode)}</div>
       <div class="setrow"><span class="label">Math ladder</span><button class="ghost" id="ladreset">Restart at ${GRADES[saved.grade].l} grade start</button>
         <div class="note">The math moves up a step after 9 of 10 right, and down a step after 4 misses. Progress is saved on this device.</div></div>
@@ -993,8 +996,12 @@ function startScreen(){
     saved.grade=g; saved.step=GRADES[g].start; saved.win=[]; store.set(saved); startScreen(); };
   $('#ladreset').onclick=()=>{ saved.step=GRADES[saved.grade].start; saved.win=[]; store.set(saved); $('#ladder').innerHTML=ladderText(); };
   bindSeg('am','ansMode',0); bindSeg('opp','opp',0); bindSeg('qlen','qLen',1); bindSeg('pc','pclock',1);
-  $('#tsnd').onclick=()=>{ saved.sound=!saved.sound; store.set(saved); if(saved.sound){ ac(); musicStart(); } else musicStop();
-    $('#tsnd').innerHTML=`${saved.sound?'🔊':'🔇'}<small>${saved.sound?'Sound on':'Sound off'}</small>`; };
+  const tsnd=()=>{ const b=$('#tsnd'); b.innerHTML=`🎵<small>${musicOn()?'Music on':'Music off'}</small>`; b.classList.toggle('off',!musicOn()); };
+  const syncMusic=()=>{ if(musicOn()){ ac(); musicStart(); } else musicStop(); tsnd(); };
+  $('#tsnd').onclick=()=>{ if(!sfxOn()){ saved.sound=true; saved.music=true; store.set(saved); return startScreen(); }   // all sound was off: tapping Music on turns sound back on too
+    saved.music=saved.music===false; store.set(saved); syncMusic(); };
+  bindSeg('snd','sound',0); const sndSeg=$('#snd').onclick; $('#snd').onclick=e=>{ sndSeg(e); syncMusic(); };   // update the setting first, then start/stop the theme
+  tsnd();
   $('#pickH').onclick=()=>teamPicker('homeT'); $('#pickA').onclick=()=>teamPicker('awayT');
   $('#kick').onclick=()=>{ musicStop(); ac(); unlockAudio(); newGame(); gameScreen(); horn(); roar(1.1,2.6); setTimeout(whistle,1200); setTimeout(()=>crowdBed(true),1500); setTimeout(()=>startDrive(25),900); };
 }

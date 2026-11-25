@@ -3,10 +3,15 @@
 
 /* ---------- saved settings (safe) ---------- */
 const store={get(){try{return JSON.parse(localStorage.getItem('footballMath1')||'{}')}catch(e){return {}}},set(v){try{localStorage.setItem('footballMath1',JSON.stringify(v))}catch(e){}}};
-/* Bump SAVE_VERSION and add a step to migrateSave() (in PROBLEMS, after the ladder) whenever
-   the shape of saved data changes. Never patch old data anywhere else. */
-const SAVE_VERSION=2;
-let saved=Object.assign({record:{w:0,l:0,t:0},grade:1,stepId:null,win:[],ansMode:'auto',music:true,qLen:180,pclock:0,sound:true,opp:'normal',homeT:'DET',awayT:'CHI',facts:{}},store.get());
+/* Bump SAVE_VERSION and add a step to migrateSave() (js/players.js) whenever the shape of
+   saved data changes. Never patch old data anywhere else.
+   saved = { v, sound, music, qLen, pclock  (this device)   cur, players:[ newPlayer() … ] } */
+const SAVE_VERSION=3;
+let saved=Object.assign({sound:true,music:true,qLen:180,pclock:0,cur:0,players:[]},store.get());
+/* everything that belongs to one kid */
+const newPlayer=name=>({name, grade:1, stepId:null, win:[], ansMode:'auto', opp:'normal', homeT:'DET', awayT:'CHI', record:{w:0,l:0,t:0}, facts:{}});
+const PLAYER_KEYS=Object.keys(newPlayer(''));
+const me=()=>saved.players[saved.cur];   // the player who's playing now
 
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);

@@ -57,25 +57,14 @@ const MAXSTEP=STEPS.length-1;
 const SI=Object.fromEntries(STEPS.map((st,i)=>[st.id,i]));   // step id → position on the ladder
 /* saved data stores the step's id (not its position), so skills can be added anywhere in STEPS safely */
 const GRADES=[{l:'K',s:'+ to 10',start:'addsub10'},{l:'1st',s:'+ − to 20',start:'add2d1d'},{l:'2nd',s:'+ − to 100',start:'sub2d'},{l:'3rd',s:'× ÷',start:'muldivall'},{l:'4th',s:'big × ÷',start:'mul3d1d'}];
+const gradeName=g=>g===0?'K':GRADES[g].l+' grade';   // 'K', '1st grade', …
 const clampS=s=>Math.max(0,Math.min(MAXSTEP,s));
-const curStep=()=>SI[saved.stepId] ?? SI[GRADES[saved.grade].start];
-function setStep(i){ saved.stepId=STEPS[clampS(i)].id; saved.win=[]; store.set(saved); }
-const resetLadder=()=>setStep(SI[GRADES[saved.grade].start]);
+const curStep=()=>SI[me().stepId] ?? SI[GRADES[me().grade].start];
+function setStep(i){ me().stepId=STEPS[clampS(i)].id; me().win=[]; store.set(saved); }
+const resetLadder=()=>setStep(SI[GRADES[me().grade].start]);
 /* difficulty band for the non-ladder questions (extra point, field goal, Stat Attack):
    0 = adding and subtracting, 1 = early × and ÷ (×2,5,10 up to ×2–5), 2 = all tables and beyond */
 const mathBand=()=>{ const s=curStep(); return s<SI.mul2510?0:s<SI.muldiv25?1:2; };
-function migrateSave(){
-  const v=saved.v||1;
-  if(v<2){   // v1 (Rookie/Pro/All-Pro, player cards) and the first ladder build (numeric step)
-    if(typeof saved.step==='number'&&STEPS[saved.step]) saved.stepId=STEPS[saved.step].id;
-    delete saved.step; delete saved.level; delete saved.cards;
-  }
-  if(!(saved.grade>=0&&saved.grade<GRADES.length)) saved.grade=1;
-  if(!(saved.stepId in SI)) saved.stepId=GRADES[saved.grade].start;
-  saved.facts=saved.facts||{}; saved.win=Array.isArray(saved.win)?saved.win:[];
-  saved.v=SAVE_VERSION; store.set(saved);
-}
-migrateSave();
 /* which ladder step each play type draws from */
 function stepFor(diff,s=curStep()){
   if(diff==='easy') return clampS(s-pick([4,5]));
@@ -85,7 +74,7 @@ function stepFor(diff,s=curStep()){
 const playTag=diff=>STEPS[diff==='easy'?clampS(curStep()-4):diff==='medium'?curStep():clampS(curStep()+1)].tag;   // the typical step for each card's label
 /* adaptive: rolling window of the last 10 answers. ≥90% → step up; ≤60% (4+ misses) → step down. */
 function adaptRecord(ok){
-  const w=saved.win=(saved.win||[]); w.push(ok?1:0); while(w.length>10) w.shift();
+  const w=me().win; w.push(ok?1:0); while(w.length>10) w.shift();
   const miss=w.filter(x=>!x).length; let ch=0;
   const s=curStep();
   if(w.length>=10 && miss<=1 && s<MAXSTEP) ch=1;

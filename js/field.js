@@ -7,7 +7,7 @@
 let G={};
 const T=()=>TEAMS[G.homeT], O=()=>TEAMS[G.awayT];
 function newGame(){
-  G={homeT:saved.homeT, awayT:saved.awayT, qLen:saved.qLen, pclock:saved.pclock,
+  G={homeT:me().homeT, awayT:me().awayT, qLen:saved.qLen, pclock:saved.pclock,
      q:1, clock:saved.qLen, ot:false, home:0, away:0, pos:25, down:1, toGo:10,
      right:0, total:0, bursts:0, missed:[], redo:{easy:[],medium:[],hard:[]},
      offSide:'home', dir:1, lines:true};
@@ -17,7 +17,7 @@ function newGame(){
 function spotText(pos){ if(pos===50)return '50'; return pos<50?`${T().abbr} ${pos}`:`${O().abbr} ${100-pos}`; }
 const ord=n=>['','1st','2nd','3rd','4th'][Math.max(1,Math.min(4,n))];
 
-function factLog(p,ok){ if(!p.key||!/x/.test(p.key)) return; const k=norm(p.key); const f=saved.facts[k]||[0,0]; f[ok?0:1]++; saved.facts[k]=f; }
+function factLog(p,ok){ if(!p.key||!/x/.test(p.key)) return; const k=norm(p.key); const f=me().facts[k]||[0,0]; f[ok?0:1]++; me().facts[k]=f; }
 
 /* =========================================================
    FIELD + PLAYERS (canvas)

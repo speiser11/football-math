@@ -8,8 +8,8 @@ Read this first, then the file in `js/` for whatever you're changing (map in §2
 
 ## 1. How it's built
 
-- **Static site, no build step.** `index.html` is a ~30-line shell: it loads `css/style.css` and eight plain scripts from `js/` **in order** (`teams → core → audio → math → field → screens → game → main`). They are classic scripts, not ES modules: they share globals, and a file may only *run* code at load time that uses things from files above it (calling later files from inside functions is fine). Every `<link>`/`<script>` has the same `?v=` number — **bump it on all of them when releasing** so phones don't mix cached old and new files. `snd/` holds recorded audio clips. `archive/` holds parked features that are **not loaded** by the page (currently player cards + locker room; see the header of `archive/player-cards.js` for how to restore). `manifest.json` + `icon-*.png` make "Add to Home Screen" work.
-- **No backend, no accounts, no analytics.** Settings, season record and fact stats live in `localStorage` under key `footballMath1`. Keep it this way unless Scott decides otherwise — kids under 13 play this (COPPA).
+- **Static site, no build step.** `index.html` is a ~30-line shell: it loads `css/style.css` and nine plain scripts from `js/` **in order** (`teams → core → audio → math → players → field → screens → game → main`). They are classic scripts, not ES modules: they share globals, and a file may only *run* code at load time that uses things from files above it (calling later files from inside functions is fine). Every `<link>`/`<script>` has the same `?v=` number — **bump it on all of them when releasing** so phones don't mix cached old and new files. `snd/` holds recorded audio clips. `archive/` holds parked features that are **not loaded** by the page (currently player cards + locker room; see the header of `archive/player-cards.js` for how to restore). `manifest.json` + `icon-*.png` make "Add to Home Screen" work.
+- **No backend, no accounts, no analytics.** Everything lives in `localStorage` under key `footballMath1`: device settings at the top level, and one entry per kid in `saved.players` (see `js/core.js` for the shape). Progress survives a wipe only through the **backup code** (§3). Keep it this way unless Scott decides otherwise — kids under 13 play this (COPPA).
 - **Rendering:** the field is a `<canvas>` drawn every frame (`draw()` / `drawPlayer()`) with a perspective "broadcast" camera. All UI around it is DOM.
 - **Fonts:** Google Fonts (Saira Condensed, Saira, DotGothic16 for the halftime LED board).
 - **Audio:** Web Audio API. Recorded clips for stadium sounds; synthesized 8-bit for jingles/UI. Built-in speech (speechSynthesis) was removed — it never played in the Claude iOS app and is unreliable on iPhone. Do not reintroduce TTS; if voice is wanted, use recorded clips (Scott has floated recording his own "Hike!", "Touchdown!").
@@ -29,9 +29,10 @@ python3 tests/smoke_test.py        # plays a full automated game in headless Chr
 |---|---|---|
 | `css/style.css` | ~170 | all styles |
 | `js/teams.js` | ~85 | `LEAGUE`, `ROSTERS` |
-| `js/core.js` | ~20 | `saved settings`, `helpers` |
+| `js/core.js` | ~25 | `saved` (device settings), `newPlayer()` (shape of one kid's data), `me()` (current player), `helpers` |
 | `js/audio.js` | ~130 | `sound`, `stadium sound engine`, `REAL STADIUM AUDIO`, jingles, theme, `unlockAudio` |
-| `js/math.js` | ~150 | `PROBLEMS` (ladder, adaptive, `migrateSave()` — runs at load) |
+| `js/math.js` | ~150 | `PROBLEMS` (ladder, adaptive, hints, tap choices) |
+| `js/players.js` | ~160 | `SAVE MIGRATION` (`migrateSave()`, `fixPlayer()` — runs at load, call stays at the bottom), `PLAYER PROFILES` (`playersModal()`), `BACKUP CODE` (`backupCode()`, `readCode()`, Settings rows) |
 | `js/field.js` | ~330 | `GAME STATE`, `FIELD + PLAYERS`, `BROADCAST CAMERA`, `PLAY ANIMATIONS` |
 | `js/screens.js` | ~110 | `SCREENS`, `game screen` |
 | `js/game.js` | ~365 | `THE SNAP`, `FLOW`, `defensive looks`, `defense`, `HALFTIME STAT ATTACK`, `end` |
@@ -65,13 +66,15 @@ Problem objects look like `{text, answer, key, vis, diff, story?}`. `key` is the
 
 ---
 
-## 3. Gameplay as it stands (v6)
+## 3. Gameplay as it stands (v6.3)
 
 - **Offense:** before each snap the defense shows a look (Blitz / Stacked box / Deep coverage) with a coaching tip. Player picks Run (easy math) / Pass (medium) / Deep Bomb (hard). Right answer + right call = big gain; right answer + OK call = small gain; Deep Bomb vs Blitz risks a sack; a **wrong** Deep Bomb can be intercepted. 4th down: go for it, punt, or field goal (in range).
 - **Defense:** opponent drives one play at a time; each snap = one problem. Right answer usually stops the play; the `OPP` setting (Easy/Normal/Tough) sets how often they make a play anyway (`luck` 0.03 / 0.25 / 0.30). Tuned by simulation so a ~95%-accurate kid on Normal gives up roughly one score a game.
 - **Math ladder (v6):** one continuous ladder of 21 steps, K → 4th (`STEPS`). The **Grade** setting (K/1st/2nd/3rd/4th) only picks the starting step (K=3, 1st=7, 2nd=11, 3rd=15, 4th=19, 1-based). Pass = current step (sometimes 1–2 below), Run = 4–5 steps below (review), Deep Bomb = always one step above. Defense draws Run/Pass problems. At grade starts this reproduces the review / on-grade / stretch table that used to be in the roadmap.
 - **Adaptive:** rolling window of the last 10 ladder answers (`saved.win`, all play types together). 9+ of 10 right → step up (ding + "LEVEL UP!" on the feedback card and ticker). 4 misses in the window (≤60%) → quiet step down. The window clears after every change. `saved.stepId` persists, so the next game starts where he left off; the start screen shows "Math step N of 21: <skill>". Picking a different grade restarts the ladder at that grade; Settings → "Restart at … grade start" does the same for the current grade.
 - **Answers:** Settings → Answers: Auto (Tap for K–1st, Type for 2nd+), Tap (4 big buttons, keys 1–4 on a keyboard), Type (keypad). Tap distractors come from `choicesFor()`: ±1/±2, ±10, swapped digits, neighbor facts (7×6 → 7×7, 6×6), wrong-operation answers; remainders only offer values below the divisor. Never negative, never duplicated.
+- **Players (v6.3):** "Who's playing?" button on the start screen (helmet + name). Up to 6 kids per device, each with their own grade, ladder step, answer mode, opponent level, teams, record and fact stats. Sound, music, quarter length and play clock are shared by the device. Rename/remove are under "Parents" in that dialog. Old saves become "Player 1". Code reads the current kid with `me()`; never put per-kid data at the top level of `saved`.
+- **Backup code ("game password"):** Settings → "<Name>'s backup code", e.g. `HBMM-RV3H-WYDT-82V7`, plus Copy and "Enter a code" (shows what the code holds and asks before replacing the current player's progress). Holds grade, ladder step, both teams, opponent level, answer mode and W-L-T record; **not** the name or fact stats. 64 data bits (scrambled) + CRC-16 in Crockford base-32; any single mistyped character is rejected (tested over 99,200 typos), and O/I/L, lowercase and spaces are accepted. **`CODE_STEP_IDS` and `CODE_TEAMS` are append-only** — reordering them breaks every code already written down. New data goes in the 9 `spare` bits, or bump `CODE_FORMAT` and keep reading old formats.
 - **Clock:** 2/3/5-minute quarters, halftime Stat Attack, overtime if tied.
 - **Play clock:** optional, **off by default** — Scott's son may know an answer but type slowly. When on, beating it = +5 yards (offense) / sack (defense). Never a penalty.
 - **Removed on purpose** (Scott found them clutter for a 6-year-old): player cards / locker room / ratings (**parked in `archive/`, planned to return**; card progress was never live, so nothing was lost), Coach's Bonus field-math questions, Momentum + Boost meter, win-probability bar, announcer voice, frequent whistles.
@@ -115,8 +118,8 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 - "Coach's report" could show the step history.
 
 ### Next up candidates (Scott, 2026-11-25)
-- **Backup code ("game password")** — high priority. Like old console passwords: a short code a parent writes down that restores a kid's progress on any device if storage gets wiped (Safari clears it, new phone, etc.). Ideas: encode the essentials only (grade, ladder `stepId`, W-L-T record, answer mode, team; later season + cards) into ~10–14 characters from an unambiguous alphabet (no 0/O/1/I/L), with a checksum so a typo is caught instead of loading garbage. Restore from Settings ("Enter code"). No server needed. Fact stats are too big for a short code — leave them out or offer a separate long "full backup" text.
-- **Player profiles** on one device ("Who's playing?"), each with its own ladder step, record and backup code.
+- **Backup code ("game password")** — DONE in v6.3 (see §3). Original notes: Like old console passwords: a short code a parent writes down that restores a kid's progress on any device if storage gets wiped (Safari clears it, new phone, etc.). Ideas: encode the essentials only (grade, ladder `stepId`, W-L-T record, answer mode, team; later season + cards) into ~10–14 characters from an unambiguous alphabet (no 0/O/1/I/L), with a checksum so a typo is caught instead of loading garbage. Restore from Settings ("Enter code"). No server needed. Fact stats are too big for a short code — leave them out or offer a separate long "full backup" text.
+- **Player profiles** — DONE in v6.3.
 - **Coach's Corner** (parent view): times-table mastery map from `saved.facts` (green mastered / yellow learning / red needs practice), ladder step history. The old map drawing is in `archive/player-cards.js` (`factState()` + the grid in `lockerRoom()`).
 
 ### Later: player cards + season mode (Scott wants both eventually)
@@ -141,7 +144,7 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 - **Releasing? Bump `?v=`** on every `<link>`/`<script>` in `index.html` (all the same number). Otherwise a phone can run a cached old `js/` file with a new one and break.
 - **New file in `js/`?** Add it to `index.html` in the right spot of the load order, and list it in §2.
 - **Ladder skills are referred to by `id`, never by position.** To add a skill, insert `{id, g, tag, f}` anywhere in `STEPS`; saved progress, grade starts and `mathBand()` all key off ids, so nothing shifts. Never write `curStep() < 7`; write `curStep() < SI.mul2510`. Don't rename or delete an id without a `migrateSave()` step for it.
-- **Changing what's saved?** Bump `SAVE_VERSION` and add one `if(v < N){…}` block to `migrateSave()`. Don't patch old saved data anywhere else.
+- **Changing what's saved?** Bump `SAVE_VERSION` (core.js) and add one `if(v < N){…}` block to `migrateSave()` (players.js); per-kid fields also go in `newPlayer()` and get validated in `fixPlayer()`. Don't patch old saved data anywhere else.
 - **Every scored question goes through `recordAnswer()`** (via `ask()`, or directly like Stat Attack). Only problems from `gen()` (`adapt:true`) move the ladder.
 - **Removing a feature?** Don't leave it switched off in the live code. If it may come back, move it to `archive/` with a how-to-restore note; otherwise delete it (git history keeps it). Clean up its saved keys in `migrateSave()`.
 

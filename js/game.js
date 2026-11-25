@@ -231,7 +231,7 @@ const OPP={easy:{luck:.03,good:[[.27,'sack'],[.36,'inc'],[.25,'run',0,2],[.12,'p
 async function defense(bStart){
   if(G.quit) return;
   if(G.ot && G.home>G.away) return endGame();
-  const R=RS(G.awayT), on=O().name, S=OPP[saved.opp]||OPP.normal;
+  const R=RS(G.awayT), on=O().name, S=OPP[me().opp]||OPP.normal;
   G.offSide='away'; G.lines=false; G.look=null;
   let bpos=Math.round(bStart); G.bDown=1; G.bToGo=Math.min(10,bpos); updateBoard(); waiting();
   await setFormation('away',bpos);
@@ -347,7 +347,7 @@ function endGame(){
   if(G.quit) return;
   G.offSide='home'; G.clock=Math.max(0,G.clock); updateBoard(); const dd=$('#dd'); if(dd) dd.textContent='FINAL';
   const win=G.home>G.away, tie=G.home===G.away;
-  if(win) saved.record.w++; else if(tie) saved.record.t++; else saved.record.l++;
+  if(win) me().record.w++; else if(tie) me().record.t++; else me().record.l++;
   store.set(saved);
   if(!win&&!tie) setTimeout(loseJingle,300);
   if(win){ roar(1.5,4.5); horn(); setTimeout(winJingle,600); confetti(); setTimeout(confetti,900); G.cheerUntil=performance.now()+5000; }
@@ -357,7 +357,7 @@ function endGame(){
   setPanel(`<div class="end">
       <h2>${win?'VICTORY':tie?'TIE GAME':'GOOD GAME'}</h2>
       <div class="final">${T().name} ${G.home} – ${G.away} ${O().name}</div>
-      <div class="statrow"><div class="stat glass"><b>${G.right}/${G.total}</b>problems right</div><div class="stat glass"><b>${pct}%</b>accuracy</div>${G.pclock?`<div class="stat glass"><b>${G.bursts}</b>bursts</div>`:''}<div class="stat glass"><b>${saved.record.w}–${saved.record.l}${saved.record.t?`–${saved.record.t}`:''}</b>record</div></div>
+      <div class="statrow"><div class="stat glass"><b>${G.right}/${G.total}</b>problems right</div><div class="stat glass"><b>${pct}%</b>accuracy</div>${G.pclock?`<div class="stat glass"><b>${G.bursts}</b>bursts</div>`:''}<div class="stat glass"><b>${me().record.w}–${me().record.l}${me().record.t?`–${me().record.t}`:''}</b>record</div></div>
       ${chips.length?`<div class="practice glass">Coach's practice list<div class="pchips">${chips.map(m=>`<span class="pchip">${m}</span>`).join('')}</div></div>`:`<div class="practice glass">No missed facts this game!</div>`}
       <div class="extras"><button class="cta" id="again">PLAY AGAIN</button></div>
     </div>`, ()=>{ $('#again').onclick=startScreen; });

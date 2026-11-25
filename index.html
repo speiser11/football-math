@@ -125,6 +125,14 @@
   .pad button{height:56px; border-radius:12px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); font-family:'Saira Condensed'; font-weight:800; font-size:28px}
   .pad button:active{background:rgba(255,255,255,.18)}
   .pad .del{font-size:18px; color:#cfd8e3}
+  .choices{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+  .choices button{height:clamp(64px,13vw,86px); border-radius:16px; background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.2); font-family:'Saira Condensed'; font-weight:900; font-size:clamp(36px,8vw,52px)}
+  .choices button:active,.choices button.picked{background:var(--gold); color:#111; border-color:var(--gold)}
+  @media (min-width:640px){ .choices{grid-template-columns:repeat(4,minmax(0,1fr))} }
+  #grade button{min-width:62px; padding:9px 10px}
+  .note.ladder{text-align:center; max-width:360px}
+  .note.ladder b{color:#cfe8ff}
+  .colm{font-family:'Saira Condensed',monospace; font-weight:800; font-size:30px; line-height:1.1; text-align:right; margin:6px auto; white-space:pre; color:#fff}
   .pad .go{grid-column:span 6; background:var(--gold); color:#111; font-weight:900; letter-spacing:3px; font-size:28px; box-shadow:0 0 20px rgba(255,210,63,.35); border:none}
   @media (min-width:640px){ .pad{grid-template-columns:repeat(12,minmax(0,1fr))} .pad .go{grid-column:span 12} }
   .fb{display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; padding:10px}
@@ -253,7 +261,6 @@ const TEAMS={
   WAS:{city:'Washington',name:'Commanders',c1:'#5A1414',c2:'#FFB612',stadium:'Northwest Stadium'},
 };
 Object.keys(TEAMS).forEach(k=>{TEAMS[k].abbr=k; TEAMS[k].logo=TEAMS[k].logo||''; TEAMS[k].h=TEAMS[k].h||TEAMS[k].c1;});
-const LEVELS=[{name:'Rookie',desc:'+ − up to ×2,5,10'},{name:'Pro',desc:'up to ×3,4 and ÷'},{name:'All-Pro',desc:'×6–9 and ÷'}];
 
 /* =========================================================
    ROSTERS — from current NFL depth charts (Ourlads, Nov 22 2026).
@@ -298,8 +305,10 @@ const RS=k=>ROSTERS[k]||ROSTERS.DET;
 
 /* ---------- saved settings (safe) ---------- */
 const store={get(){try{return JSON.parse(localStorage.getItem('footballMath1')||'{}')}catch(e){return {}}},set(v){try{localStorage.setItem('footballMath1',JSON.stringify(v))}catch(e){}}};
-let saved=Object.assign({record:{w:0,l:0,t:0},level:0,qLen:180,pclock:0,sound:true,opp:'normal',homeT:'DET',awayT:'CHI',cards:{},facts:{}},store.get());
-saved.cards=saved.cards||{}; saved.facts=saved.facts||{};
+let saved=Object.assign({record:{w:0,l:0,t:0},grade:1,qLen:180,ansMode:'auto',win:[],pclock:0,sound:true,opp:'normal',homeT:'DET',awayT:'CHI',cards:{},facts:{}},store.get());
+saved.cards=saved.cards||{}; saved.facts=saved.facts||{}; delete saved.level;
+if(!(saved.grade>=0&&saved.grade<=4)) saved.grade=1;
+if(typeof saved.step!=='number') saved.step=[2,6,10,14,18][saved.grade];   // = GRADES[grade].start
 const speak=()=>{};
 
 /* ---------- helpers ---------- */
@@ -448,20 +457,75 @@ function unlockAudio(){ setTimeout(loadSamples,0); setTimeout(()=>{ if(document.
 /* =========================================================
    PROBLEMS
    ========================================================= */
-function pAdd(max){const a=r(1,max-1), b=r(1,max-a); return {text:`${a} + ${b}`, say:`What is ${a} plus ${b}?`, answer:a+b, key:`${a}+${b}`, vis:{k:'add',a,b}}}
-function pAdd2(){const a=r(11,29), b=r(2,9); return {text:`${a} + ${b}`, say:`What is ${a} plus ${b}?`, answer:a+b, key:`${a}+${b}`, vis:{k:'up',a,b}}}
-function pSub(max){const a=r(max>=20?10:3,max), b=r(1,a-1); return {text:`${a} − ${b}`, say:`What is ${a} minus ${b}?`, answer:a-b, key:`${a}-${b}`, vis:{k:'sub',a,b}}}
-function pSub2(){const a=r(21,49), b=r(2,9); return {text:`${a} − ${b}`, say:`What is ${a} minus ${b}?`, answer:a-b, key:`${a}-${b}`, vis:{k:'sub2',a,b}}}
-function pMul(tables,maxB=10,minB=2){const t=pick(tables), b=r(minB,maxB); const [x,y]=Math.random()<.5?[t,b]:[b,t]; return {text:`${x} × ${y}`, say:`What is ${x} times ${y}?`, answer:x*y, key:`${x}x${y}`, vis:{k:'mul',a:x,b:y}}}
-function pDiv(tables,maxQ=10){const t=pick(tables), q=r(2,maxQ), a=t*q; return {text:`${a} ÷ ${t}`, say:`What is ${a} divided by ${t}? Share ${a} footballs with ${t} players.`, answer:q, key:`${a}/${t}`, vis:{k:'div',a,b:t}}}
-const TAGS=[['+ to 10','+ − to 20','× 2, 5, 10'],['+ − to 20','big + − • ×2,5,10','×3, 4, 6 • ÷'],['big + − • ×2,5,10','×3, 4 • ÷','×6–9 • ÷']];
+const add=(a,b,k='add')=>({text:`${a} + ${b}`, answer:a+b, key:`${a}+${b}`, vis:{k,a,b}});
+const sub=(a,b,k='sub')=>({text:`${a} − ${b}`, answer:a-b, key:`${a}-${b}`, vis:{k,a,b}});
+function pAdd(max){const a=r(1,max-1), b=r(1,max-a); return add(a,b)}
+function pAddTeen(){const s=r(11,20), a=r(Math.max(1,s-10),Math.min(10,s-1)); return add(a,s-a)}                 // 8+5, 9+7 … (sum 11–20)
+function pSub(max){const a=r(max>=20?10:3,max), b=r(1,a-1); return sub(a,b)}
+function pTens(){ // whole tens, or a 2-digit number ± 10/20
+  if(Math.random()<.5){ const a=r(1,8)*10, b=r(1,(100-a)/10)*10; return Math.random()<.6||a===b?add(a,b,'tens'):sub(Math.max(a,b),Math.min(a,b),'tens'); }
+  const a=r(12,79), b=pick([10,10,20]); return Math.random()<.6?add(a,b,'tens'):sub(a+b,b,'tens'); }
+function pAdd2(){const a=r(11,89), b=r(1,Math.min(9,99-a)); return add(a,b,'up')}            // 2-digit + 1-digit
+function pAddRe(){let a,b; do{ a=r(15,89); b=r(2,9); }while(a%10+b<10 || a+b>99); return add(a,b,'up')}   // 38 + 7 (regroup)
+function pSubRe(){let a,b; do{ a=r(21,98); b=r(2,9); }while(a%10>=b); return sub(a,b,'sub2')}          // 52 − 6 (regroup)
+function pAddDD(){const a=r(12,78), b=r(11,99-a); return add(a,b,'col')}
+function pSubDD(){const a=r(30,99), b=r(11,a-5); return sub(a,b,'col')}
+function p3(){ if(Math.random()<.5){ const a=r(100,849), b=r(100,999-a); return add(a,b,'col'); } const a=r(250,999), b=r(100,a-50); return sub(a,b,'col'); }
+function pMul(tables,maxB=10,minB=2){const t=pick(tables), b=r(minB,maxB); const [x,y]=Math.random()<.5?[t,b]:[b,t]; return {text:`${x} × ${y}`, answer:x*y, key:`${x}x${y}`, vis:{k:'mul',a:x,b:y}}}
+function pDiv(tables,maxQ=10){const t=pick(tables), q=r(2,maxQ), a=t*q; return {text:`${a} ÷ ${t}`, answer:q, key:`${a}/${t}`, vis:{k:'div',a,b:t}}}
+function pMulTens(){const a=r(2,9), b=r(2,9)*10; const [x,y]=Math.random()<.5?[a,b]:[b,a]; return {text:`${x} × ${y}`, answer:a*b, key:`${x}x${y}`, vis:{k:'mtens',a,b}}}
+function pMulBig(lo,hi){const a=r(lo,hi), b=r(2,9); return {text:`${a} × ${b}`, answer:a*b, key:`${a}x${b}`, vis:{k:'split',a,b}}}
+function pDivR(){const d=r(3,9), q=r(2,9), m=r(1,d-1), n=d*q+m, askQ=Math.random()<.5;
+  return {text:askQ?`${n} ÷ ${d} = <b>?</b> R ${m}`:`${n} ÷ ${d} = ${q} R <b>?</b>`, answer:askQ?q:m, story:true, key:`${n}/${d}${askQ?'q':'r'}`, vis:{k:'divr',a:n,b:d,q,m,askQ}}}
+function pDivBig(){const d=r(2,9), q=r(11,Math.floor(99/d)>11?Math.floor(99/d):12), n=d*q; return {text:`${n} ÷ ${d}`, answer:q, key:`${n}/${d}`, vis:{k:'ldiv',a:n,b:d}}}
 const any=(...fs)=>()=>pick(fs)();
-/* Each level: [easy=RUN, medium=PASS, hard=DEEP BOMB]. Bigger play = harder math. */
-const GEN={
-  easy:  [ ()=>pAdd(10),                          any(()=>pAdd(20),()=>pSub(20)),                 any(()=>pMul([2,5,10]),()=>pAdd2(),()=>pSub2()) ],
-  medium:[ any(()=>pAdd(20),()=>pSub(20)),        any(()=>pAdd2(),()=>pSub2(),()=>pMul([2,5,10])), any(()=>pMul([3,4,6],10,3),()=>pDiv([2,5,10])) ],
-  hard:  [ any(()=>pMul([2,5,10]),()=>pAdd2()),   any(()=>pMul([3,4],10,3),()=>pDiv([2,5,10])),         any(()=>pMul([6,7,8,9],10,3),()=>pDiv([3,4,6,7,8,9])) ],
-};
+const ALL=[2,3,4,5,6,7,8,9,10];
+/* ONE LADDER, K → 4th. A grade is only where you start (see GRADES).
+   PASS (on grade) = the current step (sometimes a step or two below), RUN (review) = 4–5 steps
+   below, DEEP BOMB (stretch) = always one step above. g = grade the skill belongs to. */
+const STEPS=[
+  {g:0, tag:'+ to 5',            f:()=>pAdd(5)},
+  {g:0, tag:'+ to 10',           f:()=>pAdd(10)},
+  {g:0, tag:'+ − to 10',         f:any(()=>pAdd(10),()=>pSub(10))},
+  {g:0, tag:'+ to 20',           f:pAddTeen},
+  {g:1, tag:'+ − to 20',         f:any(()=>pAdd(20),()=>pSub(20))},
+  {g:1, tag:'+ − tens',          f:pTens},
+  {g:1, tag:'2-digit + 1',       f:pAdd2},
+  {g:1, tag:'× 2, 5, 10',        f:()=>pMul([2,5,10],6,2)},
+  {g:2, tag:'+ − regroup',       f:any(pAddRe,pSubRe)},
+  {g:2, tag:'2-digit +',         f:pAddDD},
+  {g:2, tag:'2-digit −',         f:pSubDD},
+  {g:2, tag:'× 2–5 · ÷ 2,5,10',  f:any(()=>pMul([2,3,4,5]),()=>pDiv([2,5,10]))},
+  {g:3, tag:'× ÷ 2–5, 10',       f:any(()=>pMul([2,3,4,5,10]),()=>pDiv([2,3,4,5,10]))},
+  {g:3, tag:'× 6–9',             f:()=>pMul([6,7,8,9])},
+  {g:3, tag:'× ÷ all tables',    f:any(()=>pDiv(ALL),()=>pMul(ALL))},
+  {g:3, tag:'3-digit + −',       f:p3},
+  {g:4, tag:'× tens',            f:pMulTens},
+  {g:4, tag:'2-digit × 1',       f:()=>pMulBig(12,49)},
+  {g:4, tag:'3-digit × 1',       f:()=>pMulBig(101,399)},
+  {g:4, tag:'÷ remainders',      f:pDivR},
+  {g:4, tag:'2-digit ÷ 1',       f:pDivBig},
+];
+const MAXSTEP=STEPS.length-1;
+const GRADES=[{l:'K',s:'+ to 10',start:2},{l:'1st',s:'+ − to 20',start:6},{l:'2nd',s:'+ − to 100',start:10},{l:'3rd',s:'× ÷',start:14},{l:'4th',s:'big × ÷',start:18}];
+const clampS=s=>Math.max(0,Math.min(MAXSTEP,s));
+const curStep=()=>clampS(saved.step|0);
+/* which ladder step each play type draws from */
+function stepFor(diff,s=curStep()){
+  if(diff==='easy') return clampS(s-pick([4,5]));
+  if(diff==='medium') return clampS(s-pick([0,0,1,2]));
+  return clampS(s+1);
+}
+const playTag=diff=>STEPS[diff==='easy'?clampS(curStep()-4):diff==='medium'?curStep():clampS(curStep()+1)].tag;
+/* adaptive: rolling window of the last 10 answers. ≥90% → step up; ≤60% (4+ misses) → step down. */
+function adaptRecord(ok){
+  const w=saved.win=(saved.win||[]); w.push(ok?1:0); while(w.length>10) w.shift();
+  const miss=w.filter(x=>!x).length; let ch=0;
+  if(w.length>=10 && miss<=1 && saved.step<MAXSTEP) ch=1;
+  else if(miss>=4 && saved.step>0) ch=-1;   // 4 misses already means ≤60% once the window fills
+  if(ch){ saved.step=curStep()+ch; saved.win=[]; }
+  store.set(saved); return ch;
+}
 /* treat 3×4 and 4×3 (or 2+5 and 5+2) as the same fact */
 const norm=k=>{ if(!k) return ''; const m=k.match(/^(\d+)([+x])(\d+)$/); return m?[+m[1],+m[3]].sort((a,b)=>a-b).join(m[2]):k; };
 function gen(diff){
@@ -470,9 +534,28 @@ function gen(diff){
   const pool=(G.redo[diff]||[]).filter(x=>G.n-(x.missN||0)>=4 && !recent.includes(norm(x.key)));
   let p;
   if(pool.length && Math.random()<.4) p={...pick(pool)};
-  else { let tries=0; do{ p=GEN[diff][G.level](); tries++; }while(recent.includes(norm(p.key)) && tries<30); p.diff=diff; }
+  else { const st=stepFor(diff); let tries=0; do{ p=STEPS[st].f(); tries++; }while(recent.includes(norm(p.key)) && tries<30); p.diff=diff; p.step=st; }
+  p.adapt=true;
   recent.push(norm(p.key)); if(recent.length>12) recent.shift();
   return p;
+}
+/* tap mode: 3 plausible wrong answers — ±1, ±2, ±10, swapped digits, neighbor facts. No negatives, no repeats. */
+function choicesFor(p){
+  const A=p.answer, v=p.vis||{}, shuf=a=>a.map(x=>[Math.random(),x]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+  let close=[A+1,A-1,A+2,A-2], pat=[];
+  if(A>=10) pat.push(A+10,A-10);
+  const s=String(A); if(s.length>=2){ const sw=s.slice(0,-2)+s.slice(-1)+s.slice(-2,-1); if(sw[0]!=='0') pat.push(+sw); }
+  if(v.k==='mul'||v.k==='split'){ pat.push(v.a*(v.b+1),v.a*(v.b-1),(v.a+1)*v.b,(v.a-1)*v.b); }
+  if(v.k==='mtens'){ pat.push(v.a*(v.b+10),v.a*(v.b-10),(v.a+1)*v.b,(v.a-1)*v.b,v.a*v.b/10); }
+  if(v.k==='add'||v.k==='up'||v.k==='col') pat.push(Math.abs(v.a-v.b));
+  if(v.k==='sub'||v.k==='sub2'||v.k==='col'&&p.text.includes('−')) pat.push(v.a+v.b);
+  if(v.k==='divr'&&!v.askQ){ close=Array.from({length:v.b},(_,i)=>i); pat=[]; }   // remainders are always < the divisor
+  const ok=x=>Number.isInteger(x)&&x>=0&&x!==A&&(x>0||A<=4);
+  const out=[]; const take=x=>{ if(ok(x)&&!out.includes(x)&&out.length<3) out.push(x); };
+  const P=shuf(pat), C=shuf(close);
+  take(P[0]); take(C[0]); shuf([...P.slice(1),...C.slice(1)]).forEach(take);
+  for(let k=3;out.length<3;k++){ take(A+k); take(A-k); }
+  return shuf([A,...out]);
 }
 function dots(n,cls=''){return Array.from({length:n},()=>`<div class="dot ${cls}"></div>`).join('')}
 function hintHTML(p){
@@ -482,6 +565,17 @@ function hintHTML(p){
   if(v.k==='sub') return `<div class="hint"><div class="grp" style="max-width:260px">${dots(v.a-v.b)}${dots(v.b,'x')}</div></div><div class="htext">Take away ${v.b}, count what's left: ${v.a-v.b}</div>`;
   if(v.k==='sub2') return `<div class="htext">Start at <b>${v.a}</b> and count back ${v.b}:<br>${Array.from({length:v.b},(_,i)=>v.a-i-1).join(', ')}</div>`;
   if(v.k==='mul'){ if(v.a*v.b>100) return `<div class="htext">${v.a} groups of ${v.b}</div>`; return `<div class="hint">${Array.from({length:v.a},()=>`<div class="grp">${dots(v.b)}</div>`).join('')}</div><div class="htext">${v.a} groups of ${v.b} = ${v.a*v.b}</div>`}
+  if(v.k==='tens'){ const plus=p.text.includes('+'), stepN=v.b/10, seq=Array.from({length:stepN},(_,i)=>plus?v.a+10*(i+1):v.a-10*(i+1)).join(', ');
+    return `<div class="htext">Start at <b>${v.a}</b> and count ${plus?'up':'back'} by tens:<br>${seq}</div>`; }
+  if(v.k==='col'){ const plus=p.text.includes('+'), w=String(Math.max(v.a,v.b)).length+1, pad=x=>String(x).padStart(w,' ');
+    return `<pre class="colm">${pad(v.a)}\n${plus?'+':'−'}${pad(v.b).slice(1)}\n${'─'.repeat(w)}\n${pad(p.answer)}</pre><div class="htext">Line them up. Ones first, then tens${w>3?', then hundreds':''}.</div>`; }
+  if(v.k==='mtens'){ const t=v.b/10; return `<div class="htext">${v.a} × ${t} = ${v.a*t}<br>so ${v.a} × ${v.b} = ${v.a*t}<b>0</b></div>`; }
+  if(v.k==='split'){ const parts=String(v.a).split('').map((d,i,arr)=>+d*10**(arr.length-1-i)).filter(x=>x);
+    return `<div class="htext">Break ${v.a} apart: ${parts.join(' + ')}<br>${parts.map(x=>`${x} × ${v.b} = ${x*v.b}`).join('<br>')}<br>Add them: <b>${v.a*v.b}</b></div>`; }
+  if(v.k==='divr'){ const body=v.a<=60?`<div class="hint">${Array.from({length:v.b},()=>`<div class="grp">${dots(v.q)}</div>`).join('')}<div class="grp">${dots(v.m,'x')}</div></div>`:'';
+    return `${body}<div class="htext">${v.b} groups of ${v.q} = ${v.b*v.q}, with <b>${v.m}</b> left over<br>${v.a} ÷ ${v.b} = ${v.q} R ${v.m}</div>`; }
+  if(v.k==='ldiv'){ const q=v.a/v.b, qt=Math.floor(q/10)*10, rest=v.a-qt*v.b;
+    return `<div class="htext">Split ${v.a} into ${qt*v.b} + ${rest}<br>${qt*v.b} ÷ ${v.b} = ${qt}, ${rest} ÷ ${v.b} = ${q-qt}<br>${qt} + ${q-qt} = <b>${q}</b></div>`; }
   if(v.k==='div'){const q=v.a/v.b; return `<div class="hint">${Array.from({length:v.b},()=>`<div class="grp">${dots(q)}</div>`).join('')}</div><div class="htext">${v.a} shared into ${v.b} groups = ${q} each</div>`}
   return '';
 }
@@ -493,7 +587,7 @@ function hintHTML(p){
 let G={};
 const T=()=>TEAMS[G.homeT], O=()=>TEAMS[G.awayT];
 function newGame(){
-  G={homeT:saved.homeT, awayT:saved.awayT, level:saved.level, qLen:saved.qLen, pclock:saved.pclock,
+  G={homeT:saved.homeT, awayT:saved.awayT, qLen:saved.qLen, pclock:saved.pclock,
      q:1, clock:saved.qLen, ot:false, home:0, away:0, pos:25, down:1, toGo:10,
      right:0, total:0, bursts:0, missed:[], redo:{easy:[],medium:[],hard:[]},
      offSide:'home', dir:1, lines:true, streak:0, boost:false, ups:[]};
@@ -860,6 +954,9 @@ function playSVG(kind){
 const segHTML=(id,opts,cur)=>`<div class="seg" id="${id}">${opts.map(o=>`<button data-v="${o.v}" class="${String(o.v)===String(cur)?'on':''}">${o.l}${o.s?`<small>${o.s}</small>`:''}</button>`).join('')}</div>`;
 function bindSeg(id,key,num){ $('#'+id).onclick=e=>{const b=e.target.closest('button'); if(!b)return; saved[key]=num?+b.dataset.v:(b.dataset.v==='true'?true:b.dataset.v==='false'?false:b.dataset.v); store.set(saved); $('#'+id).querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));}; }
 
+function ladderText(){ const s=curStep(), st=STEPS[s];
+  return `Math step <b>${s+1}</b> of ${STEPS.length}: <b>${st.tag}</b> · ${GRADES[st.g].l==='K'?'K':GRADES[st.g].l+' grade'} level`; }
+const useTap=()=>saved.ansMode==='tap'||(saved.ansMode!=='type'&&saved.grade<=1);
 function startScreen(){
   G.quit=true; GAME++; ANIM=null; crowdBed(false); if(AC) musicStart();
   const rec=saved.record, h=TEAMS[saved.homeT], a=TEAMS[saved.awayT];
@@ -872,18 +969,25 @@ function startScreen(){
       <div class="vs">VS</div>
       <button class="tcard" id="pickA"><span class="label">Opponent</span>${helmetSVG(a,84,true)}<span class="nm">${a.name}</span><span class="chg">Change team</span></button>
     </div>
-    <div class="opt"><span class="label">Level</span>${segHTML('lvl',LEVELS.map((l,i)=>({v:i,l:l.name,s:l.desc})),saved.level)}</div>
+    <div class="opt"><span class="label">Grade</span>${segHTML('grade',GRADES.map((g,i)=>({v:i,l:g.l,s:g.s})),saved.grade)}
+      <div class="note ladder" id="ladder">${ladderText()}</div></div>
     <div class="opt"><span class="label">Opponent</span>${segHTML('opp',[{v:'easy',l:'Easy',s:'scores rarely'},{v:'normal',l:'Normal',s:'close games'},{v:'tough',l:'Tough',s:'you need stops'}],saved.opp)}</div>
     <div class="opt"><span class="label">Quarter length</span>${segHTML('qlen',[{v:120,l:'2 min',s:'quick'},{v:180,l:'3 min',s:'regular'},{v:300,l:'5 min',s:'long'}],saved.qLen)}</div>
     <button class="cta" id="kick">KICKOFF</button>
     <details class="settings glass"><summary>Settings</summary>
       <div class="setrow"><span class="label">Play clock</span>${segHTML('pc',[{v:0,l:'Off'},{v:20,l:'20 sec'},{v:10,l:'10 sec'}],saved.pclock)}
         <div class="note">Answer before the clock runs out for a +5 yard burst. Running out never hurts.</div></div>
+      <div class="setrow"><span class="label">Answers</span>${segHTML('am',[{v:'auto',l:'Auto',s:'tap for K–1st'},{v:'tap',l:'Tap',s:'4 big buttons'},{v:'type',l:'Type',s:'number pad'}],saved.ansMode)}</div>
+      <div class="setrow"><span class="label">Math ladder</span><button class="ghost" id="ladreset">Restart at ${GRADES[saved.grade].l} grade start</button>
+        <div class="note">The math moves up a step after 9 of 10 right, and down a step after 4 misses. Progress is saved on this device.</div></div>
       <div class="setrow"><span class="label">Sound</span>${segHTML('snd',[{v:true,l:'On'},{v:false,l:'Off'}],saved.sound)}</div>
     </details>
     <div class="record">Season record: ${rec.w}–${rec.l}${rec.t?`–${rec.t}`:''}</div>
   </div>`;
-  bindSeg('lvl','level',1); bindSeg('opp','opp',0); $('#snd').addEventListener('click',()=>{ if(saved.sound){ musicStart(); } else musicStop(); }); bindSeg('qlen','qLen',1); bindSeg('pc','pclock',1); bindSeg('snd','sound',0);
+  $('#grade').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const g=+b.dataset.v; if(g===saved.grade) return;
+    saved.grade=g; saved.step=GRADES[g].start; saved.win=[]; store.set(saved); startScreen(); };
+  $('#ladreset').onclick=()=>{ saved.step=GRADES[saved.grade].start; saved.win=[]; store.set(saved); $('#ladder').innerHTML=ladderText(); };
+  bindSeg('am','ansMode',0); bindSeg('opp','opp',0); $('#snd').addEventListener('click',()=>{ if(saved.sound){ musicStart(); } else musicStop(); }); bindSeg('qlen','qLen',1); bindSeg('pc','pclock',1); bindSeg('snd','sound',0);
   $('#pickH').onclick=()=>teamPicker('homeT'); $('#pickA').onclick=()=>teamPicker('awayT');
   $('#kick').onclick=()=>{ musicStop(); ac(); unlockAudio(); newGame(); gameScreen(); horn(); roar(1.1,2.6); setTimeout(whistle,1200); setTimeout(()=>crowdBed(true),1500); setTimeout(()=>startDrive(25),900); };
 }
@@ -971,7 +1075,8 @@ function streakHit(ok){ G.streak=ok?G.streak+1:0; }
    ========================================================= */
 function ask(p,opts={}){
   return new Promise(resolve=>{
-    let val='', t0=performance.now(), timer=null, beat=!!opts.clock, hint=false; const gid=GAME;
+    let val='', t0=performance.now(), timer=null, beat=!!opts.clock, hint=false, done=false; const gid=GAME;
+    const tap=useTap(), ch=tap?choicesFor(p):null;
     dim(true);
     const show=()=>{
       $('#panel').innerHTML=`<div class="snap glass">
@@ -980,25 +1085,29 @@ function ask(p,opts={}){
         <div class="eqrow">${p.story?`<div class="eq story">${p.text}</div>`:`<div class="eq">${p.text}</div><div class="eqs">=</div>`}<div class="ans" id="ans">${val||'&nbsp;'}</div></div>
         ${p.vis&&!p.story?`<div class="film"><button id="film">${hint?'Hide film room':'Film room: show me'}</button></div>`:''}
         ${hint?hintHTML(p):''}
-        <div class="pad">${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button data-n="${n}">${n}</button>`).join('')}<button class="del" data-n="del">⌫</button><button class="go" data-n="go">HIKE!</button></div>
+        ${tap?`<div class="choices">${ch.map(n=>`<button data-v="${n}">${n}</button>`).join('')}</div>`
+          :`<div class="pad">${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button data-n="${n}">${n}</button>`).join('')}<button class="del" data-n="del">⌫</button><button class="go" data-n="go">HIKE!</button></div>`}
       </div>`;
-      $('.pad').onclick=e=>{const b=e.target.closest('button'); if(b)press(b.dataset.n)};
+      if(tap) $('.choices').onclick=e=>{const b=e.target.closest('button'); if(!b||done)return; val=b.dataset.v; b.classList.add('picked'); const el=$('#ans'); if(el) el.textContent=val; tone(760,.05,'square',.035); submit();};
+      else $('.pad').onclick=e=>{const b=e.target.closest('button'); if(b)press(b.dataset.n)};
       const f=$('#film'); if(f) f.onclick=()=>{ hint=!hint; show(); };
     };
     const press=n=>{
       if(n==='del') val=val.slice(0,-1);
       else if(n==='go'){ if(val!=='') submit(); return; }
-      else if(val.length<3){ val+=n; tone(700+ +n*40,.045,'square',.035); }
+      else if(val.length<4){ val+=n; tone(700+ +n*40,.045,'square',.035); }
       const el=$('#ans'); if(el) el.innerHTML=val||'&nbsp;';
     };
-    const onKey=e=>{ if(gid!==GAME){document.removeEventListener('keydown',onKey);return;} if(/^[0-9]$/.test(e.key))press(e.key); else if(e.key==='Backspace')press('del'); else if(e.key==='Enter')press('go'); };
+    const onKey=e=>{ if(gid!==GAME){document.removeEventListener('keydown',onKey);return;} if(tap){ const i='1234'.indexOf(e.key); if(i>=0){ const b=document.querySelectorAll('.choices button')[i]; if(b) b.click(); } return; } if(/^[0-9]$/.test(e.key))press(e.key); else if(e.key==='Backspace')press('del'); else if(e.key==='Enter')press('go'); };
     document.addEventListener('keydown',onKey);
     if(opts.clock){ timer=setInterval(()=>{ const left=Math.max(0,opts.clock-(performance.now()-t0)/1000); const f=$('#pcf'), n=$('#pcn'); if(f){f.style.width=(left/opts.clock*100)+'%'; f.classList.toggle('low',left<opts.clock*.3);} if(n)n.textContent=left>0?`:${String(Math.ceil(left)).padStart(2,'0')}`:'no burst'; if(left<=0){beat=false; clearInterval(timer);} },100); }
     const submit=()=>{
+      if(done) return; done=true;
       clearInterval(timer); document.removeEventListener('keydown',onKey);
-      const ok=+val===p.answer, fast=ok&&beat;
-      if(!opts.noStat){ G.total++; if(ok){G.right++; removeRedo(p);} else addMiss(p); factLog(p,ok); streakHit(ok); }
-      if(ok){ ding(); $('#panel').innerHTML=`<div class="fb glass"><div class="yay">${pick(['YES!','CORRECT!','NAILED IT!','BOOM!','MONEY!'])}</div><div class="eqline">${p.story?'':p.text+' = '}${p.answer}</div>${fast&&opts.burstText?`<div class="burst">⚡ ${opts.burstText}</div>`:''}</div>`;
+      const ok=+val===p.answer, fast=ok&&beat; let up=0;
+      if(!opts.noStat){ G.total++; if(ok){G.right++; removeRedo(p);} else addMiss(p); factLog(p,ok); streakHit(ok); if(p.adapt) up=adaptRecord(ok); }
+      if(up>0) setTimeout(()=>{ if(gid===GAME){ lower(`⬆ LEVEL UP! Now: ${STEPS[curStep()].tag}`,'good'); chip([[76,.25],[81,.25],[88,.6]],220,'square',.05); } },250);
+      if(ok){ ding(); $('#panel').innerHTML=`<div class="fb glass"><div class="yay">${pick(['YES!','CORRECT!','NAILED IT!','BOOM!','MONEY!'])}</div><div class="eqline">${p.story?'':p.text+' = '}${p.answer}</div>${fast&&opts.burstText?`<div class="burst">⚡ ${opts.burstText}</div>`:''}${up>0?`<div class="burst">⬆ LEVEL UP!</div>`:''}</div>`;
         setTimeout(()=>{ if(gid===GAME){ dim(false); resolve({ok,fast}); } },fast?1100:750); }
       else { bonk(); $('#panel').innerHTML=`<div class="fb glass"><div class="oops">Almost! Let's look</div><div class="eqline">${p.story?'Answer: ':p.text+' = '}<span style="color:#5fe08a">${p.answer}</span></div>${hintHTML(p)}<button class="cont" id="ct">${opts.contText||'Run the play ▶'}</button></div>`;
         $('#ct').onclick=()=>{ dim(false); resolve({ok:false,fast:false}); }; }
@@ -1067,7 +1176,7 @@ function callPlay(){
   updateBoard(); setFormation('home',G.pos);
   const L=LOOKS[G.look], on=O().name;
   const canFG=G.pos>=60, fgDist=100-G.pos+17, fourth=G.down===4, late=!G.ot&&G.clock<=40&&(G.q===2||G.q===4);
-  const card=(t,kind,nm,yd,pips)=>`<button class="play" data-t="${t}">${playSVG(kind)}<div class="nm">${nm}</div><div class="yd">${yd}</div><div class="mt">${TAGS[G.level][pips-1]}</div><div class="pips">${[1,2,3].map(i=>`<i class="${i<=pips?'on':''}"></i>`).join('')}</div></button>`;
+  const card=(t,kind,nm,yd,pips)=>`<button class="play" data-t="${t}">${playSVG(kind)}<div class="nm">${nm}</div><div class="yd">${yd}</div><div class="mt">${playTag(t)}</div><div class="pips">${[1,2,3].map(i=>`<i class="${i<=pips?'on':''}"></i>`).join('')}</div></button>`;
   setPanel(`
     <div class="look glass" style="border-color:${L.col}">${lookIcon(G.look)}<div><div class="lk">${on.toUpperCase()} SHOW: <span style="color:${L.col}">${L.name}</span></div><div class="tip">${L.tip}</div></div></div>
     <div class="ptitle">${fourth?"4th down — what's the call, Coach?":late?'Clock is running out!':'Call your play'}</div>
@@ -1137,7 +1246,7 @@ async function touchdown(carrier,name){
   waiting('TOUCHDOWN');
   await celebrate(carrier);
   const before=G.home, R=RS(G.homeT);
-  const p=G.level===0
+  const p=curStep()<4
     ? {text:'6 + 1', answer:7, vis:{k:'add',a:6,b:1}}
     : {text:`You have <b>${before}</b> points.<br>The kick adds <b>1</b> more.<br>What's your new score?`, answer:before+1, story:true, vis:{k:'up',a:before,b:1}};
   const res=await ask(p,{title:'EXTRA POINT', color:'#8a6512', sit:`${last(R.K[1])} #${R.K[0]} to kick`, contText:'Kick it ▶'});
@@ -1149,7 +1258,7 @@ async function touchdown(carrier,name){
   goTo('defense',75);
 }
 async function fieldGoal(){
-  const lv=G.level, n=lv===0?r(2,3):lv===1?r(2,5):r(3,10), R=RS(G.homeT);
+  const st=curStep(), lv=st<7?0:st<12?1:2, n=lv===0?r(2,3):lv===1?r(2,5):r(3,10), R=RS(G.homeT);
   const seq=Array.from({length:n-1},(_,i)=>3*(i+1)).join(', ');
   const p=lv===0
     ? {text:`Field goals are worth 3.<br>Count by 3s: <b>${seq}, __</b>`, answer:3*n, story:true, vis:{k:'mul',a:n,b:3}}
@@ -1266,7 +1375,7 @@ function statAttack(){
     const gid=GAME;
     const others=Object.keys(TEAMS).filter(k=>k!==G.homeT&&k!==G.awayT);
     const ids=[G.homeT,G.awayT,pick(others)].sort(()=>Math.random()-.5);
-    const [A,B,C]=ids, lv=G.level;
+    const [A,B,C]=ids, lv=curStep()<5?0:curStep()<12?1:2;
     const d= lv===0?r(2,5):lv===1?r(5,12):r(10,25);
     const bY= lv===0?r(9,14):r(18,35), aY=bY+d, cY=bY-(lv===0?r(2,5):r(4,10));
     const verb=pick([['ran for','1st half rushing'],['threw for','1st half passing']]);

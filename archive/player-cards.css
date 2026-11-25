@@ -1,0 +1,22 @@
+/* ARCHIVED with archive/player-cards.js - paste into index.html <style> to restore. */
+  .locker{display:flex; flex-direction:column; gap:14px; padding-bottom:30px}
+  .lhead{display:flex; justify-content:space-between; align-items:flex-end; gap:10px; flex-wrap:wrap}
+  .lhead h1{font-family:'Saira Condensed'; font-weight:900; font-size:44px; margin:0; line-height:1}
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px}
+  .pcard{border-radius:16px; padding:2px}
+  .pcard .in{border-radius:14px; background:#0a1626; padding:12px; display:flex; flex-direction:column; gap:6px; height:100%}
+  .pcard .rt{display:flex; justify-content:space-between; align-items:flex-start}
+  .pcard .rating{font-family:'Saira Condensed'; font-weight:900; font-size:46px; line-height:.85}
+  .pcard .tier{font-family:'Saira Condensed'; font-weight:800; font-size:11px; letter-spacing:2px; border:1px solid; border-radius:6px; padding:1px 6px}
+  .pcard .who{display:flex; align-items:center; gap:8px}
+  .pcard .no{font-family:'Saira Condensed'; font-weight:900; font-size:24px; line-height:1}
+  .pcard .pos{font-family:'Saira Condensed'; font-weight:800; font-size:13px; color:var(--blue); letter-spacing:1px}
+  .pcard .name{font-family:'Saira Condensed'; font-weight:800; font-size:19px; line-height:1.05}
+  .pcard .pw{font-size:12px; color:var(--mute); font-weight:600}
+  .pcard .prog{display:flex; gap:2px; margin-top:auto} .pcard .prog i{flex:1; height:6px; border-radius:2px; background:rgba(255,255,255,.14)} .pcard .prog i.on{background:var(--gold)}
+  .pcard .pn{font-family:'Saira Condensed'; font-weight:700; font-size:12px; color:#cfd8e3}
+  .map{padding:14px}
+  .mgrid{display:grid; grid-template-columns:22px repeat(10,minmax(0,1fr)); gap:3px; margin-top:8px}
+  .mgrid div{height:20px; border-radius:3px; font-family:'Saira Condensed'; font-weight:800; font-size:12px; color:var(--mute); display:flex; align-items:center; justify-content:center}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:12px; color:#cfd8e3}
+  .legend span{display:flex; align-items:center; gap:5px} .legend i{width:11px; height:11px; border-radius:3px; display:inline-block}

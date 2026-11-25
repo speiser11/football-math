@@ -8,7 +8,7 @@ Read this first, then `index.html`. Keep this file updated when anything below c
 
 ## 1. How it's built
 
-- **One static page, no build step.** `index.html` holds all CSS + JS (~1,300 lines). `snd/` holds recorded audio clips. `manifest.json` + `icon-*.png` make "Add to Home Screen" work.
+- **One static page, no build step.** `index.html` holds all CSS + JS (~1,300 lines). `snd/` holds recorded audio clips. `archive/` holds parked features that are **not loaded** by the page (currently player cards + locker room; see the header of `archive/player-cards.js` for how to restore). `manifest.json` + `icon-*.png` make "Add to Home Screen" work.
 - **No backend, no accounts, no analytics.** Settings, season record and fact stats live in `localStorage` under key `footballMath1`. Keep it this way unless Scott decides otherwise — kids under 13 play this (COPPA).
 - **Rendering:** the field is a `<canvas>` drawn every frame (`draw()` / `drawPlayer()`) with a perspective "broadcast" camera. All UI around it is DOM.
 - **Fonts:** Google Fonts (Saira Condensed, Saira, DotGothic16 for the halftime LED board).
@@ -60,7 +60,7 @@ Problem objects look like `{text, answer, key, vis, diff, story?}`. `key` is the
 - **Answers:** Settings → Answers: Auto (Tap for K–1st, Type for 2nd+), Tap (4 big buttons, keys 1–4 on a keyboard), Type (keypad). Tap distractors come from `choicesFor()`: ±1/±2, ±10, swapped digits, neighbor facts (7×6 → 7×7, 6×6), wrong-operation answers; remainders only offer values below the divisor. Never negative, never duplicated.
 - **Clock:** 2/3/5-minute quarters, halftime Stat Attack, overtime if tied.
 - **Play clock:** optional, **off by default** — Scott's son may know an answer but type slowly. When on, beating it = +5 yards (offense) / sack (defense). Never a penalty.
-- **Removed on purpose** (Scott found them clutter for a 6-year-old; code deleted in the v6 cleanup, old saved card data is wiped by `migrateSave()`): player cards / locker room / ratings, Coach's Bonus field-math questions, Momentum + Boost meter, win-probability bar, announcer voice, frequent whistles.
+- **Removed on purpose** (Scott found them clutter for a 6-year-old): player cards / locker room / ratings (**parked in `archive/`, planned to return**; card progress was never live, so nothing was lost), Coach's Bonus field-math questions, Momentum + Boost meter, win-probability bar, announcer voice, frequent whistles.
 
 ---
 
@@ -100,6 +100,12 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 - Halftime Stat Attack only has 3 sizes (keyed off the step); could scale more finely.
 - "Coach's report" could show the step history.
 
+### Later: player cards + season mode (Scott wants both eventually)
+- **Player cards** are parked in `archive/player-cards.js` / `.css` (working; checked against v6). Bring back as a reward layer once the core math loop feels right.
+- **Season mode** (a set number of games, standings, a playoff/championship, then a fresh season). **Can be fully local** — same `localStorage` as today, no server needed. A server is only needed for: the same season on several devices, several kids' profiles synced across devices, or friends' leagues.
+  - Recommended path: (1) local seasons; (2) a parent-only **"Backup code / Restore"** (export `saved` as text or a QR code, import on another device) — moves progress without accounts; (3) only if really wanted, a backend (e.g. Supabase/Firebase) behind a **parent** login. Step 3 means accounts for kids under 13 → COPPA (verifiable parental consent, privacy policy, data deletion), so avoid it unless sync is essential.
+  - Also worth adding with seasons: **player profiles on one device** (pick "who's playing"), since today one device = one ladder step + one record.
+
 ### Also worth doing (lower priority)
 - **Resume a game** after the app is closed/backgrounded (save `G` + current phase to `localStorage`).
 - **Works offline** — add a small service worker caching `index.html`, `snd/`, icons, fonts.
@@ -116,7 +122,7 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 - **Ladder skills are referred to by `id`, never by position.** To add a skill, insert `{id, g, tag, f}` anywhere in `STEPS`; saved progress, grade starts and `mathBand()` all key off ids, so nothing shifts. Never write `curStep() < 7`; write `curStep() < SI.mul2510`. Don't rename or delete an id without a `migrateSave()` step for it.
 - **Changing what's saved?** Bump `SAVE_VERSION` and add one `if(v < N){…}` block to `migrateSave()`. Don't patch old saved data anywhere else.
 - **Every scored question goes through `recordAnswer()`** (via `ask()`, or directly like Stat Attack). Only problems from `gen()` (`adapt:true`) move the ladder.
-- **Removing a feature? Delete its code** (JS, CSS and saved keys via `migrateSave()`); don't leave it switched off. Git history keeps it.
+- **Removing a feature?** Don't leave it switched off inside `index.html`. If it may come back, move it to `archive/` with a how-to-restore note; otherwise delete it (git history keeps it). Clean up its saved keys in `migrateSave()`.
 
 
 - **Audience is a 6–7 year old.** Big tap targets, no harsh failure (wrong answers show a dot-picture hint and the play still runs), short text, no reading-heavy screens, nothing that punishes slow typing.

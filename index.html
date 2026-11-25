@@ -63,14 +63,6 @@
   .fieldwrap{position:relative; border-radius:16px; overflow:hidden; border:1px solid var(--line); background:#05080e}
   #cv{display:block; width:100%; height:clamp(230px,48vw,440px); transition:filter .35s}
   .fieldwrap.dim #cv{filter:brightness(.45) saturate(.8)}
-  .topbar{position:absolute; left:10px; right:10px; top:8px; display:flex; justify-content:space-between; gap:8px; pointer-events:none}
-  .wp{padding:6px 10px; width:clamp(150px,30%,240px)}
-  .wpbar{display:flex; height:8px; border-radius:4px; overflow:hidden; margin:4px 0 2px}
-  .wpnums{display:flex; justify-content:space-between; font-family:'Saira Condensed'; font-weight:800; font-size:14px}
-  .mom{display:flex; align-items:center; gap:8px; padding:4px 12px 4px 4px; border-radius:40px}
-  .mom .t{font-family:'Saira Condensed'; font-weight:800; font-size:14px; line-height:1.05; text-align:left}
-  .mom .t small{display:block; color:var(--mute); font-size:11px; font-weight:700}
-  .mom.boost{border-color:var(--gold); box-shadow:0 0 18px rgba(255,210,63,.5)}
   .stadium{position:absolute; top:10px; left:50%; transform:translateX(-50%); font-family:'Saira Condensed'; font-weight:700; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#cfd8e3; background:rgba(0,0,0,.45); padding:2px 10px; border-radius:20px; white-space:nowrap}
   .bug{position:absolute; left:50%; transform:translateX(-50%); bottom:8px; display:flex; align-items:stretch; border-radius:10px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.55); font-family:'Saira Condensed'; white-space:nowrap}
   .bug .tm{display:flex; align-items:center; gap:7px; padding:3px 12px}
@@ -104,7 +96,6 @@
   .look{display:flex; align-items:center; gap:10px; padding:8px 12px; border-left:5px solid}
   .look .lk{font-family:'Saira Condensed'; font-weight:900; font-size:18px; letter-spacing:.5px}
   .look .tip{font-size:13px; font-weight:600; color:#cfd8e3; line-height:1.3}
-  .boostnote{text-align:center; font-family:'Saira Condensed'; font-weight:800; color:var(--gold); font-size:16px}
   .waiting{text-align:center; font-family:'Saira Condensed'; font-weight:900; font-size:26px; color:var(--mute); padding:18px 0; letter-spacing:2px}
 
   /* snap */
@@ -175,27 +166,6 @@
   .hike{background:none; padding:0; align-self:center}
 
   /* locker */
-  .locker{display:flex; flex-direction:column; gap:14px; padding-bottom:30px}
-  .lhead{display:flex; justify-content:space-between; align-items:flex-end; gap:10px; flex-wrap:wrap}
-  .lhead h1{font-family:'Saira Condensed'; font-weight:900; font-size:44px; margin:0; line-height:1}
-  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px}
-  .pcard{border-radius:16px; padding:2px}
-  .pcard .in{border-radius:14px; background:#0a1626; padding:12px; display:flex; flex-direction:column; gap:6px; height:100%}
-  .pcard .rt{display:flex; justify-content:space-between; align-items:flex-start}
-  .pcard .rating{font-family:'Saira Condensed'; font-weight:900; font-size:46px; line-height:.85}
-  .pcard .tier{font-family:'Saira Condensed'; font-weight:800; font-size:11px; letter-spacing:2px; border:1px solid; border-radius:6px; padding:1px 6px}
-  .pcard .who{display:flex; align-items:center; gap:8px}
-  .pcard .no{font-family:'Saira Condensed'; font-weight:900; font-size:24px; line-height:1}
-  .pcard .pos{font-family:'Saira Condensed'; font-weight:800; font-size:13px; color:var(--blue); letter-spacing:1px}
-  .pcard .name{font-family:'Saira Condensed'; font-weight:800; font-size:19px; line-height:1.05}
-  .pcard .pw{font-size:12px; color:var(--mute); font-weight:600}
-  .pcard .prog{display:flex; gap:2px; margin-top:auto} .pcard .prog i{flex:1; height:6px; border-radius:2px; background:rgba(255,255,255,.14)} .pcard .prog i.on{background:var(--gold)}
-  .pcard .pn{font-family:'Saira Condensed'; font-weight:700; font-size:12px; color:#cfd8e3}
-  .map{padding:14px}
-  .mgrid{display:grid; grid-template-columns:22px repeat(10,minmax(0,1fr)); gap:3px; margin-top:8px}
-  .mgrid div{height:20px; border-radius:3px; font-family:'Saira Condensed'; font-weight:800; font-size:12px; color:var(--mute); display:flex; align-items:center; justify-content:center}
-  .legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:12px; color:#cfd8e3}
-  .legend span{display:flex; align-items:center; gap:5px} .legend i{width:11px; height:11px; border-radius:3px; display:inline-block}
 
   /* end */
   .end{display:flex; flex-direction:column; align-items:center; gap:12px; text-align:center; padding:8px}
@@ -213,7 +183,6 @@
   .hidden{display:none!important}
   @media (max-width:560px){
     .bug .sc{font-size:22px} .bug .ab{font-size:14px} .bug .clk{font-size:16px} .bug .q{font-size:13px} .bug .dd{font-size:12px} .bug .tm{padding:2px 8px} .bug .mid{gap:6px; padding:2px 8px}
-    .wp{width:auto; padding:4px 8px} .wp .label{font-size:9px; letter-spacing:1px} .wpnums{font-size:12px; gap:8px} .wpbar{width:110px} .mom{padding:2px 8px 2px 2px} .mom svg{width:30px;height:30px} .mom .t{font-size:12px} .mom .t small{display:none}
     .play .nm{font-size:17px} .play .mt{font-size:10px}
     .pad button{height:50px; font-size:24px}
     .stadium{display:none}
@@ -308,11 +277,10 @@ const RS=k=>ROSTERS[k]||ROSTERS.DET;
 
 /* ---------- saved settings (safe) ---------- */
 const store={get(){try{return JSON.parse(localStorage.getItem('footballMath1')||'{}')}catch(e){return {}}},set(v){try{localStorage.setItem('footballMath1',JSON.stringify(v))}catch(e){}}};
-let saved=Object.assign({record:{w:0,l:0,t:0},grade:1,qLen:180,ansMode:'auto',win:[],music:true,pclock:0,sound:true,opp:'normal',homeT:'DET',awayT:'CHI',cards:{},facts:{}},store.get());
-saved.cards=saved.cards||{}; saved.facts=saved.facts||{}; delete saved.level;
-if(!(saved.grade>=0&&saved.grade<=4)) saved.grade=1;
-if(typeof saved.step!=='number') saved.step=[2,6,10,14,18][saved.grade];   // = GRADES[grade].start
-const speak=()=>{};
+/* Bump SAVE_VERSION and add a step to migrateSave() (in PROBLEMS, after the ladder) whenever
+   the shape of saved data changes. Never patch old data anywhere else. */
+const SAVE_VERSION=2;
+let saved=Object.assign({record:{w:0,l:0,t:0},grade:1,stepId:null,win:[],ansMode:'auto',music:true,qLen:180,pclock:0,sound:true,opp:'normal',homeT:'DET',awayT:'CHI',facts:{}},store.get());
 
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -330,7 +298,7 @@ function ac(){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContex
 const sfxOn=()=>saved.sound!==false;
 const musicOn=()=>sfxOn()&&saved.music!==false;   // title theme: needs Sound on AND Music on
 /* ---------- stadium sound engine (all synthesized) ---------- */
-let MASTER=null, NOISE=null, BED=null;
+let MASTER=null, NOISE=null;
 function out(){ const c=ac(); if(!c) return null; if(!MASTER){ const comp=c.createDynamicsCompressor(); comp.threshold.value=-16; comp.knee.value=10; comp.ratio.value=4; comp.attack.value=.004; comp.release.value=.25; const g=c.createGain(); g.gain.value=.95; comp.connect(g); g.connect(c.destination); MASTER=comp; } return MASTER; }
 function noiseBuf(){ const c=ac(); if(!NOISE){ const n=c.sampleRate*2; NOISE=c.createBuffer(1,n,c.sampleRate); const d=NOISE.getChannelData(0); for(let i=0;i<n;i++) d[i]=Math.random()*2-1; } return NOISE; }
 function nz({dur=.3,type='bandpass',f=1000,f2=null,q=.7,v=.3,a=.01,when=0,dest=null}={}){ const c=ac(); if(!c||!sfxOn())return; const t=c.currentTime+when; const s=c.createBufferSource(); s.buffer=noiseBuf(); s.loop=true; const fl=c.createBiquadFilter(); fl.type=type; fl.frequency.setValueAtTime(f,t); if(f2) fl.frequency.exponentialRampToValueAtTime(f2,t+dur); fl.Q.value=q; const g=c.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(Math.max(.0002,v),t+a); g.gain.exponentialRampToValueAtTime(.0001,t+dur); s.connect(fl); fl.connect(g); g.connect(dest||out()); s.start(t,Math.random()*1.5); s.stop(t+dur+.05); }
@@ -354,15 +322,7 @@ function roar_syn(level=1,dur=2){ dur=Math.min(dur,1.8); level*=.75; nz({dur,typ
 const ooh_syn=()=>{ crowdVowel('oh',1,1.4,true); };
 const aww_syn=()=>{ crowdVowel('aw',1,1.7,true); nz({dur:1.5,type:'bandpass',f:450,q:.8,v:.09,a:.2}); };
 function horn_syn(){ [146.8,185,220,293.7].forEach(f=>osc({f,dur:1.4,type:'sawtooth',v:.065,a:.04,lp:1500})); }
-function brass(ch,when=0,dur=.35,v=.075){ ch.forEach(f=>{ osc({f,dur,type:'sawtooth',v,a:.015,when,lp:2400}); osc({f:f*1.007,dur,type:'sawtooth',v:v*.6,a:.015,when,lp:2400}); }); }
-function drum(kind,when=0){ if(kind==='kick') osc({f:140,f2:45,dur:.26,v:.7,when}); else { nz({dur:.15,type:'highpass',f:1500,v:.32,a:.002,when}); osc({f:210,f2:150,dur:.1,type:'triangle',v:.22,when}); } }
-function fanfare_old(){ for(let i=0;i<7;i++) drum('snare',i*.065); drum('kick',.45); brass([293.7,370,440],.45,.22); brass([293.7,370,440],.72,.16); brass([329.6,415.3,493.9],.92,.2); brass([392,493.9,587.3],1.15,.8,.085); drum('kick',1.15); drum('snare',1.15); }
 function claps_syn(){ [0,.28,.75,.95,1.15].forEach(w=>{ for(let k=0;k<7;k++) nz({dur:.07,type:'bandpass',f:1200+Math.random()*1000,q:1.2,v:.11,a:.002,when:w+Math.random()*.035}); osc({f:90,f2:50,dur:.12,v:.28,when:w}); }); }
-function crowdBed_syn(on){ const c=ac(); if(!c) return; if(on&&!BED&&sfxOn()){ const s=c.createBufferSource(); s.buffer=noiseBuf(); s.loop=true; const f=c.createBiquadFilter(); f.type='bandpass'; f.frequency.value=650; f.Q.value=.6; const g=c.createGain(); g.gain.value=.05; const l=c.createOscillator(); l.frequency.value=.21; const lg=c.createGain(); lg.gain.value=.018; l.connect(lg); lg.connect(g.gain); s.connect(f); f.connect(g); g.connect(out()); s.start(); l.start(); BED={s,l}; } if(!on&&BED){ try{BED.s.stop(); BED.l.stop();}catch(e){} BED=null; } }
-const ding_old=()=>{ osc({f:880,dur:.12,type:'triangle',v:.16}); osc({f:1320,dur:.22,type:'triangle',v:.16,when:.1}); };
-const bonk_old=()=>osc({f:200,f2:150,dur:.28,type:'triangle',v:.12});
-const thud=()=>hit(1);
-const cheer=(len=2)=>roar(Math.min(1.4,.6+len*.25),len+.6);
 
 /* =========================================================
    REAL STADIUM AUDIO (recorded clips in snd/, from Mixkit, free license)
@@ -447,8 +407,7 @@ function musicStart(){ if(!musicOn()) return; const c=ac(); if(!c||MUS.on) retur
 function musicStop(){ MUS.on=false; clearInterval(MUS.timer);
   if(MUSBUS){ const b=MUSBUS; MUSBUS=null; try{ b.gain.setTargetAtTime(0,AC.currentTime,.02); setTimeout(()=>{ try{b.disconnect()}catch(e){} },200); }catch(e){} } }   // silences notes already queued
 let unlocked=false, silentEl=null;
-/* iPhone: 'playback' mode plays sounds through the silent switch but can silence the voice.
-   So only use it when the announcer is off. */
+/* iPhone: 'playback' mode lets sounds play even with the silent switch on. */
 function setAudioMode(){ try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){} }
 function silentWavURL(){ const n=4410, buf=new ArrayBuffer(44+n*2), v=new DataView(buf); const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
   w(0,'RIFF'); v.setUint32(4,36+n*2,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,44100,true); v.setUint32(28,88200,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,n*2,true);
@@ -491,47 +450,67 @@ const ALL=[2,3,4,5,6,7,8,9,10];
    PASS (on grade) = the current step (sometimes a step or two below), RUN (review) = 4–5 steps
    below, DEEP BOMB (stretch) = always one step above. g = grade the skill belongs to. */
 const STEPS=[
-  {g:0, tag:'+ to 5',            f:()=>pAdd(5)},
-  {g:0, tag:'+ to 10',           f:()=>pAdd(10)},
-  {g:0, tag:'+ − to 10',         f:any(()=>pAdd(10),()=>pSub(10))},
-  {g:0, tag:'+ to 20',           f:pAddTeen},
-  {g:1, tag:'+ − to 20',         f:any(()=>pAdd(20),()=>pSub(20))},
-  {g:1, tag:'+ − tens',          f:pTens},
-  {g:1, tag:'2-digit + 1',       f:pAdd2},
-  {g:1, tag:'× 2, 5, 10',        f:()=>pMul([2,5,10],6,2)},
-  {g:2, tag:'+ − regroup',       f:any(pAddRe,pSubRe)},
-  {g:2, tag:'2-digit +',         f:pAddDD},
-  {g:2, tag:'2-digit −',         f:pSubDD},
-  {g:2, tag:'× 2–5 · ÷ 2,5,10',  f:any(()=>pMul([2,3,4,5]),()=>pDiv([2,5,10]))},
-  {g:3, tag:'× ÷ 2–5, 10',       f:any(()=>pMul([2,3,4,5,10]),()=>pDiv([2,3,4,5,10]))},
-  {g:3, tag:'× 6–9',             f:()=>pMul([6,7,8,9])},
-  {g:3, tag:'× ÷ all tables',    f:any(()=>pDiv(ALL),()=>pMul(ALL))},
-  {g:3, tag:'3-digit + −',       f:p3},
-  {g:4, tag:'× tens',            f:pMulTens},
-  {g:4, tag:'2-digit × 1',       f:()=>pMulBig(12,49)},
-  {g:4, tag:'3-digit × 1',       f:()=>pMulBig(101,399)},
-  {g:4, tag:'÷ remainders',      f:pDivR},
-  {g:4, tag:'2-digit ÷ 1',       f:pDivBig},
+  {id:'add5', g:0, tag:'+ to 5',            f:()=>pAdd(5)},
+  {id:'add10', g:0, tag:'+ to 10',           f:()=>pAdd(10)},
+  {id:'addsub10', g:0, tag:'+ − to 10',         f:any(()=>pAdd(10),()=>pSub(10))},
+  {id:'add20', g:0, tag:'+ to 20',           f:pAddTeen},
+  {id:'addsub20', g:1, tag:'+ − to 20',         f:any(()=>pAdd(20),()=>pSub(20))},
+  {id:'tens', g:1, tag:'+ − tens',          f:pTens},
+  {id:'add2d1d', g:1, tag:'2-digit + 1',       f:pAdd2},
+  {id:'mul2510', g:1, tag:'× 2, 5, 10',        f:()=>pMul([2,5,10],6,2)},
+  {id:'regroup', g:2, tag:'+ − regroup',       f:any(pAddRe,pSubRe)},
+  {id:'add2d', g:2, tag:'2-digit +',         f:pAddDD},
+  {id:'sub2d', g:2, tag:'2-digit −',         f:pSubDD},
+  {id:'mul25div', g:2, tag:'× 2–5 · ÷ 2,5,10',  f:any(()=>pMul([2,3,4,5]),()=>pDiv([2,5,10]))},
+  {id:'muldiv25', g:3, tag:'× ÷ 2–5, 10',       f:any(()=>pMul([2,3,4,5,10]),()=>pDiv([2,3,4,5,10]))},
+  {id:'mul69', g:3, tag:'× 6–9',             f:()=>pMul([6,7,8,9])},
+  {id:'muldivall', g:3, tag:'× ÷ all tables',    f:any(()=>pDiv(ALL),()=>pMul(ALL))},
+  {id:'addsub3d', g:3, tag:'3-digit + −',       f:p3},
+  {id:'multens', g:4, tag:'× tens',            f:pMulTens},
+  {id:'mul2d1d', g:4, tag:'2-digit × 1',       f:()=>pMulBig(12,49)},
+  {id:'mul3d1d', g:4, tag:'3-digit × 1',       f:()=>pMulBig(101,399)},
+  {id:'divrem', g:4, tag:'÷ remainders',      f:pDivR},
+  {id:'div2d1d', g:4, tag:'2-digit ÷ 1',       f:pDivBig},
 ];
 const MAXSTEP=STEPS.length-1;
-const GRADES=[{l:'K',s:'+ to 10',start:2},{l:'1st',s:'+ − to 20',start:6},{l:'2nd',s:'+ − to 100',start:10},{l:'3rd',s:'× ÷',start:14},{l:'4th',s:'big × ÷',start:18}];
+const SI=Object.fromEntries(STEPS.map((st,i)=>[st.id,i]));   // step id → position on the ladder
+/* saved data stores the step's id (not its position), so skills can be added anywhere in STEPS safely */
+const GRADES=[{l:'K',s:'+ to 10',start:'addsub10'},{l:'1st',s:'+ − to 20',start:'add2d1d'},{l:'2nd',s:'+ − to 100',start:'sub2d'},{l:'3rd',s:'× ÷',start:'muldivall'},{l:'4th',s:'big × ÷',start:'mul3d1d'}];
 const clampS=s=>Math.max(0,Math.min(MAXSTEP,s));
-const curStep=()=>clampS(saved.step|0);
+const curStep=()=>SI[saved.stepId] ?? SI[GRADES[saved.grade].start];
+function setStep(i){ saved.stepId=STEPS[clampS(i)].id; saved.win=[]; store.set(saved); }
+const resetLadder=()=>setStep(SI[GRADES[saved.grade].start]);
+/* difficulty band for the non-ladder questions (extra point, field goal, Stat Attack):
+   0 = adding and subtracting, 1 = early × and ÷ (×2,5,10 up to ×2–5), 2 = all tables and beyond */
+const mathBand=()=>{ const s=curStep(); return s<SI.mul2510?0:s<SI.muldiv25?1:2; };
+function migrateSave(){
+  const v=saved.v||1;
+  if(v<2){   // v1 (Rookie/Pro/All-Pro, player cards) and the first ladder build (numeric step)
+    if(typeof saved.step==='number'&&STEPS[saved.step]) saved.stepId=STEPS[saved.step].id;
+    delete saved.step; delete saved.level; delete saved.cards;
+  }
+  if(!(saved.grade>=0&&saved.grade<GRADES.length)) saved.grade=1;
+  if(!(saved.stepId in SI)) saved.stepId=GRADES[saved.grade].start;
+  saved.facts=saved.facts||{}; saved.win=Array.isArray(saved.win)?saved.win:[];
+  saved.v=SAVE_VERSION; store.set(saved);
+}
+migrateSave();
 /* which ladder step each play type draws from */
 function stepFor(diff,s=curStep()){
   if(diff==='easy') return clampS(s-pick([4,5]));
   if(diff==='medium') return clampS(s-pick([0,0,1,2]));
   return clampS(s+1);
 }
-const playTag=diff=>STEPS[diff==='easy'?clampS(curStep()-4):diff==='medium'?curStep():clampS(curStep()+1)].tag;
+const playTag=diff=>STEPS[diff==='easy'?clampS(curStep()-4):diff==='medium'?curStep():clampS(curStep()+1)].tag;   // the typical step for each card's label
 /* adaptive: rolling window of the last 10 answers. ≥90% → step up; ≤60% (4+ misses) → step down. */
 function adaptRecord(ok){
   const w=saved.win=(saved.win||[]); w.push(ok?1:0); while(w.length>10) w.shift();
   const miss=w.filter(x=>!x).length; let ch=0;
-  if(w.length>=10 && miss<=1 && saved.step<MAXSTEP) ch=1;
-  else if(miss>=4 && saved.step>0) ch=-1;   // 4 misses already means ≤60% once the window fills
-  if(ch){ saved.step=curStep()+ch; saved.win=[]; }
-  store.set(saved); return ch;
+  const s=curStep();
+  if(w.length>=10 && miss<=1 && s<MAXSTEP) ch=1;
+  else if(miss>=4 && s>0) ch=-1;   // 4 misses already means ≤60% once the window fills
+  if(ch) setStep(s+ch); else store.set(saved);
+  return ch;
 }
 /* treat 3×4 and 4×3 (or 2+5 and 5+2) as the same fact */
 const norm=k=>{ if(!k) return ''; const m=k.match(/^(\d+)([+x])(\d+)$/); return m?[+m[1],+m[3]].sort((a,b)=>a-b).join(m[2]):k; };
@@ -597,41 +576,14 @@ function newGame(){
   G={homeT:saved.homeT, awayT:saved.awayT, qLen:saved.qLen, pclock:saved.pclock,
      q:1, clock:saved.qLen, ot:false, home:0, away:0, pos:25, down:1, toGo:10,
      right:0, total:0, bursts:0, missed:[], redo:{easy:[],medium:[],hard:[]},
-     offSide:'home', dir:1, lines:true, streak:0, boost:false, ups:[]};
+     offSide:'home', dir:1, lines:true};
   GAME++; ANIM=null; ACT=[]; FX=[]; BALL={segs:[{t0:0,t1:1,type:'ground',x:35,y:MIDY}]}; cam={x:40,y:MIDY,init:false};
   buildCrowd();
 }
 function spotText(pos){ if(pos===50)return '50'; return pos<50?`${T().abbr} ${pos}`:`${O().abbr} ${100-pos}`; }
 const ord=n=>['','1st','2nd','3rd','4th'][Math.max(1,Math.min(4,n))];
 
-/* ---------- player cards: ratings grow with correct answers ---------- */
-const CARD_SLOTS=[
-  {k:'QB',pos:'QB',attr:'ARM',pw:'Pass & deep plays'},
-  {k:'RB',pos:'RB',attr:'SPEED',pw:'Run plays'},
-  {k:'WR0',pos:'WR',attr:'HANDS',pw:'Catches'},
-  {k:'WR1',pos:'WR',attr:'ROUTES',pw:'Catches'},
-  {k:'WR2',pos:'WR',attr:'HANDS',pw:'Catches'},
-  {k:'K',pos:'K',attr:'LEG',pw:'Field goals & extra points'}];
-function slotPlayer(team,k){ const R=RS(team); return k==='QB'?R.QB:k==='RB'?R.RB:k==='K'?R.K:R.WR[+k[2]]; }
-const SLOT_BASE={QB:82,RB:80,WR0:81,WR1:78,WR2:76,K:75};
-function baseRating(name,k){ let h=0; for(const ch of name) h=(h*31+ch.charCodeAt(0))>>>0; return (SLOT_BASE[k]||76)+(h%4); }
-function cardOf(team,k){ const [num,name]=slotPlayer(team,k); const s=saved.cards[team+':'+k]||{lv:0,p:0}; return {num,name,rating:Math.min(99,baseRating(name,k)+s.lv),p:s.p}; }
-function cardXP(){}
-function _cardXPold(k){
-  const key=G.homeT+':'+k; const s=saved.cards[key]||{lv:0,p:0}; s.p++;
-  let up=null;
-  if(s.p>=10){ s.p=0; s.lv++; const c=cardOf(G.homeT,k); up=`${c.name} → ${Math.min(99,c.rating+1)}`; G.ups.push(up); }
-  saved.cards[key]=s; store.set(saved);
-  if(up){ setTimeout(()=>{ lower(`⬆ UPGRADE: ${up}`,'good'); ding(); },200); }
-}
 function factLog(p,ok){ if(!p.key||!/x/.test(p.key)) return; const k=norm(p.key); const f=saved.facts[k]||[0,0]; f[ok?0:1]++; saved.facts[k]=f; }
-
-/* ---------- win probability (simple, kid-readable) ---------- */
-function winProb(){
-  const diff=G.home-G.away, total=G.qLen*4, el=Math.min(1,((G.q-1)*G.qLen+(G.qLen-G.clock))/total);
-  let p=50+diff*(2.5+el*6)+(G.offSide==='home'?3:-3);
-  return Math.round(Math.max(3,Math.min(97,p)));
-}
 
 /* =========================================================
    FIELD + PLAYERS (canvas)
@@ -929,7 +881,6 @@ async function animPlay(side,losPos,spec){
     }
   });
   BALL.segs=segs;
-  if(false){ speak(pick(['Set... hike!','Ready... set... hike!','Blue 42... hike!','Down... set... hike!']),'call'); await wait(1300); ev=ev.filter(e=>e.fn!==hut); }
   await runAnim(dur,ev);
   return out;
 }
@@ -985,7 +936,7 @@ function startScreen(){
       <div class="setrow"><span class="label">Quarter length</span>${segHTML('qlen',[{v:120,l:'2 min',s:'quick'},{v:180,l:'3 min',s:'regular'},{v:300,l:'5 min',s:'long'}],saved.qLen)}</div>
       <div class="setrow"><span class="label">Play clock</span>${segHTML('pc',[{v:0,l:'Off'},{v:20,l:'20 sec'},{v:10,l:'10 sec'}],saved.pclock)}
         <div class="note">Answer before the clock runs out for a +5 yard burst. Running out never hurts.</div></div>
-      <div class="setrow"><span class="label">Sound</span>${segHTML('snd',[{v:true,l:'On'},{v:false,l:'Off'}],saved.sound)}</div>
+      <div class="setrow"><span class="label">Sound</span>${segHTML('sndset',[{v:true,l:'On'},{v:false,l:'Off'}],saved.sound)}</div>
       <div class="setrow"><span class="label">Answers</span>${segHTML('am',[{v:'auto',l:'Auto',s:'tap for K–1st'},{v:'tap',l:'Tap',s:'4 big buttons'},{v:'type',l:'Type',s:'number pad'}],saved.ansMode)}</div>
       <div class="setrow"><span class="label">Math ladder</span><button class="ghost" id="ladreset">Restart at ${GRADES[saved.grade].l} grade start</button>
         <div class="note">The math moves up a step after 9 of 10 right, and down a step after 4 misses. Progress is saved on this device.</div></div>
@@ -993,14 +944,14 @@ function startScreen(){
     <div class="record">Season record: ${rec.w}–${rec.l}${rec.t?`–${rec.t}`:''}</div>
   </div>`;
   $('#grade').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const g=+b.dataset.v; if(g===saved.grade) return;
-    saved.grade=g; saved.step=GRADES[g].start; saved.win=[]; store.set(saved); startScreen(); };
-  $('#ladreset').onclick=()=>{ saved.step=GRADES[saved.grade].start; saved.win=[]; store.set(saved); $('#ladder').innerHTML=ladderText(); };
+    saved.grade=g; resetLadder(); startScreen(); };
+  $('#ladreset').onclick=()=>{ resetLadder(); $('#ladder').innerHTML=ladderText(); };
   bindSeg('am','ansMode',0); bindSeg('opp','opp',0); bindSeg('qlen','qLen',1); bindSeg('pc','pclock',1);
   const tsnd=()=>{ const b=$('#tsnd'); b.innerHTML=`🎵<small>${musicOn()?'Music on':'Music off'}</small>`; b.classList.toggle('off',!musicOn()); };
   const syncMusic=()=>{ if(musicOn()){ ac(); musicStart(); } else musicStop(); tsnd(); };
   $('#tsnd').onclick=()=>{ if(!sfxOn()){ saved.sound=true; saved.music=true; store.set(saved); return startScreen(); }   // all sound was off: tapping Music on turns sound back on too
     saved.music=saved.music===false; store.set(saved); syncMusic(); };
-  bindSeg('snd','sound',0); const sndSeg=$('#snd').onclick; $('#snd').onclick=e=>{ sndSeg(e); syncMusic(); };   // update the setting first, then start/stop the theme
+  bindSeg('sndset','sound',0); const sndSeg=$('#sndset').onclick; $('#sndset').onclick=e=>{ sndSeg(e); syncMusic(); };   // update the setting first, then start/stop the theme
   tsnd();
   $('#pickH').onclick=()=>teamPicker('homeT'); $('#pickA').onclick=()=>teamPicker('awayT');
   $('#kick').onclick=()=>{ musicStop(); ac(); unlockAudio(); newGame(); gameScreen(); horn(); roar(1.1,2.6); setTimeout(whistle,1200); setTimeout(()=>crowdBed(true),1500); setTimeout(()=>startDrive(25),900); };
@@ -1015,41 +966,11 @@ function teamPicker(key){
   m.onclick=e=>{ const b=e.target.closest('.tbtn'); if(b){ const v=b.dataset.t; if(saved[other]===v) saved[other]=saved[key]; saved[key]=v; store.set(saved); m.remove(); startScreen(); } else if(e.target.id==='mclose') m.remove(); };
 }
 
-/* ---------- locker room ---------- */
-function factState(a,b){ const f=saved.facts[norm(`${a}x${b}`)]; if(!f) return 'rgba(255,255,255,.08)'; const [ok,no]=f, n=ok+no, acc=ok/n;
-  if(ok>=3&&acc>=.8) return '#2e9e4f'; if(no>=2&&acc<.6) return '#e0533a'; return '#e7b416'; }
-function lockerRoom(team){
-  const t=TEAMS[team];
-  const cards=CARD_SLOTS.map(s=>{ const c=cardOf(team,s.k); const tier=c.rating>=88?['ELITE','#7fd3ff']:c.rating>=82?['GOLD','#d9a92b']:c.rating>=77?['SILVER','#aeb6c0']:['BRONZE','#b5793f'];
-    return `<div class="pcard" style="background:${tier[1]}"><div class="in">
-      <div class="rt"><div class="rating cf">${c.rating}</div><div class="tier" style="color:${tier[1]};border-color:${tier[1]}">${tier[0]}</div></div>
-      <div class="who">${helmetSVG(t,46)}<div><div class="no">#${c.num}</div><div class="pos">${s.pos} · ${s.attr}</div></div></div>
-      <div class="name">${c.name}</div>
-      <div class="pw">Powered by: ${s.pw}</div>
-      <div class="prog">${Array.from({length:10},(_,i)=>`<i class="${i<c.p?'on':''}"></i>`).join('')}</div>
-      <div class="pn">${c.p}/10 to reach ${Math.min(99,c.rating+1)}</div></div></div>`; }).join('');
-  let grid='<div></div>'+Array.from({length:10},(_,i)=>`<div>${i+1}</div>`).join('');
-  for(let a=1;a<=10;a++){ grid+=`<div>${a}</div>`; for(let b=1;b<=10;b++) grid+=`<div style="background:${factState(a,b)}"></div>`; }
-  $('#app').innerHTML=`<div class="locker">
-    <div class="lhead"><div><div class="label" style="color:#7fd3ff">${t.city} ${t.name}</div><h1>LOCKER ROOM</h1></div>
-      <button class="ghost" id="back">◀ Back</button></div>
-    <div class="note" style="max-width:none">Your players get better as you get problems right. Every 10 right answers upgrades the player who made the play.</div>
-    <div class="cards">${cards}</div>
-    <div class="map glass"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap"><div class="cf" style="font-weight:900;font-size:22px">TIMES TABLE MAP</div><div class="label">Coach view · all games on this device</div></div>
-      <div class="mgrid">${grid}</div>
-      <div class="legend"><span><i style="background:#2e9e4f"></i>Mastered</span><span><i style="background:#e7b416"></i>Learning</span><span><i style="background:#e0533a"></i>Needs practice</span><span><i style="background:rgba(255,255,255,.12)"></i>Not seen yet</span></div></div>
-  </div>`;
-  $('#back').onclick=startScreen;
-}
-
 /* ---------- game screen ---------- */
 function gameScreen(){
   const h=T(), a=O();
   $('#app').innerHTML=`
   <div class="fieldwrap" id="fw"><canvas id="cv"></canvas>
-    <div class="topbar">
-      
-    </div>
     <div class="stadium">${h.stadium}</div>
     <div class="bug">
       <div class="tm" style="background:${h.c1}"><span class="poss" id="ph"></span><span class="ab" style="color:${h.c2==='#000000'||h.c2===h.c1?'#fff':h.c2}">${h.abbr}</span><span class="sc" id="sh">0</span></div>
@@ -1064,9 +985,6 @@ function gameScreen(){
   setFormation('home',25,'normal',0);
   updateBoard();
 }
-function ringSVG(frac,size=40,col='#ffd23f'){ const r=size/2-5, c=2*Math.PI*r, n=10, gap=3, seg=(c-n*gap)/n, on=Math.round(frac*n); let s='';
-  for(let i=0;i<n;i++) s+=`<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${i<on?col:'rgba(255,255,255,.15)'}" stroke-width="5" stroke-dasharray="${seg} ${c-seg}" stroke-dashoffset="${-i*(seg+gap)}" transform="rotate(-90 ${size/2} ${size/2})"/>`;
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">${s}</svg>`; }
 function updateBoard(){
   if(!$('#sh')) return;
   $('#sh').textContent=G.home; $('#sa').textContent=G.away;
@@ -1077,12 +995,10 @@ function updateBoard(){
   else $('#dd').textContent=G.bDown?`${ord(G.bDown).toUpperCase()} & ${G.bToGo}`:'DEFENSE';
 }
 function lower(t,cls='info'){ const k=$('#tk'); if(!k)return; k.className='txt '+cls; k.innerHTML=t; }
-const tick=(t,c='')=>lower(t,c==='red'?'bad':c==='blue'?'info':'good');
 function setPanel(html,fn){ if(!$('#panel'))return; const show=()=>{ $('#panel').innerHTML=html; if(fn)fn(); }; G._panel=show; show(); }
 const waiting=(t='')=>setPanel(`<div class="waiting">${t||'&nbsp;'}</div>`);
 const runClock=s=>{ if(!G.ot){ G.clock=Math.max(0,G.clock-s); updateBoard(); } };
 const dim=on=>{ const f=$('#fw'); if(f) f.classList.toggle('dim',on); };
-function streakHit(ok){ G.streak=ok?G.streak+1:0; }
 
 /* =========================================================
    THE SNAP: question card + play clock
@@ -1119,7 +1035,7 @@ function ask(p,opts={}){
       if(done) return; done=true;
       clearInterval(timer); document.removeEventListener('keydown',onKey);
       const ok=+val===p.answer, fast=ok&&beat; let up=0;
-      if(!opts.noStat){ G.total++; if(ok){G.right++; removeRedo(p);} else addMiss(p); factLog(p,ok); streakHit(ok); if(p.adapt) up=adaptRecord(ok); }
+      up=recordAnswer(p,ok);
       if(up>0) setTimeout(()=>{ if(gid===GAME){ lower(`⬆ LEVEL UP! Now: ${STEPS[curStep()].tag}`,'good'); chip([[76,.25],[81,.25],[88,.6]],220,'square',.05); } },250);
       if(ok){ ding(); $('#panel').innerHTML=`<div class="fb glass"><div class="yay">${pick(['YES!','CORRECT!','NAILED IT!','BOOM!','MONEY!'])}</div><div class="eqline">${p.story?'':p.text+' = '}${p.answer}</div>${fast&&opts.burstText?`<div class="burst">⚡ ${opts.burstText}</div>`:''}${up>0?`<div class="burst">⬆ LEVEL UP!</div>`:''}</div>`;
         setTimeout(()=>{ if(gid===GAME){ dim(false); resolve({ok,fast}); } },fast?1100:750); }
@@ -1128,6 +1044,14 @@ function ask(p,opts={}){
     };
     G._ans=p.answer; G._panel=show; show();
   });
+}
+/* the ONE place an answer is scored: game stats, missed-fact replay, fact log, adaptive ladder.
+   Returns +1/-1 if the ladder moved. Any new kind of question should go through here. */
+function recordAnswer(p,ok){
+  G.total++;
+  if(ok){ G.right++; removeRedo(p); } else addMiss(p);
+  factLog(p,ok);
+  return p.adapt? adaptRecord(ok) : 0;
 }
 function addMiss(p){ if(p.key&&!G.missed.includes(p.text)) G.missed.push(p.text); if(p.diff&&p.key){ const ex=G.redo[p.diff].find(x=>x.key===p.key); if(ex) ex.missN=G.n; else G.redo[p.diff].push({...p,missN:G.n}); } }
 function removeRedo(p){ if(p.diff&&p.key) G.redo[p.diff]=G.redo[p.diff].filter(x=>x.key!==p.key); }
@@ -1260,19 +1184,19 @@ async function touchdown(carrier,name){
   waiting('TOUCHDOWN');
   await celebrate(carrier);
   const before=G.home, R=RS(G.homeT);
-  const p=curStep()<4
+  const p=curStep()<SI.addsub20
     ? {text:'6 + 1', answer:7, vis:{k:'add',a:6,b:1}}
     : {text:`You have <b>${before}</b> points.<br>The kick adds <b>1</b> more.<br>What's your new score?`, answer:before+1, story:true, vis:{k:'up',a:before,b:1}};
   const res=await ask(p,{title:'EXTRA POINT', color:'#8a6512', sit:`${last(R.K[1])} #${R.K[0]} to kick`, contText:'Kick it ▶'});
   if(G.quit) return;
   waiting();
   await animPlay('home',85,{kind:'fg',good:res.ok});
-  if(res.ok){ G.home+=1; cardXP('K'); lower(`${last(R.K[1])}'s extra point is good`,'good'); } else lower('Extra point missed','bad');
+  if(res.ok){ G.home+=1; lower(`${last(R.K[1])}'s extra point is good`,'good'); } else lower('Extra point missed','bad');
   updateBoard(); await wait(1200);
   goTo('defense',75);
 }
 async function fieldGoal(){
-  const st=curStep(), lv=st<7?0:st<12?1:2, n=lv===0?r(2,3):lv===1?r(2,5):r(3,10), R=RS(G.homeT);
+  const lv=mathBand(), n=lv===0?r(2,3):lv===1?r(2,5):r(3,10), R=RS(G.homeT);
   const seq=Array.from({length:n-1},(_,i)=>3*(i+1)).join(', ');
   const p=lv===0
     ? {text:`Field goals are worth 3.<br>Count by 3s: <b>${seq}, __</b>`, answer:3*n, story:true, vis:{k:'mul',a:n,b:3}}
@@ -1284,7 +1208,7 @@ async function fieldGoal(){
   waiting();
   await animPlay('home',G.pos,{kind:'fg',good:res.ok});
   runClock(r(5,8));
-  if(res.ok){ G.home+=3; cardXP('K'); updateBoard(); fanfare(); lower(`${last(R.K[1])} — IT'S GOOD! +3`,'good'); } else lower('No good — wide','bad');
+  if(res.ok){ G.home+=3; updateBoard(); fanfare(); lower(`${last(R.K[1])} — IT'S GOOD! +3`,'good'); } else lower('No good — wide','bad');
   await wait(1500); goTo('defense',75);
 }
 async function punt(){
@@ -1389,7 +1313,7 @@ function statAttack(){
     const gid=GAME;
     const others=Object.keys(TEAMS).filter(k=>k!==G.homeT&&k!==G.awayT);
     const ids=[G.homeT,G.awayT,pick(others)].sort(()=>Math.random()-.5);
-    const [A,B,C]=ids, lv=curStep()<5?0:curStep()<12?1:2;
+    const [A,B,C]=ids, st=curStep(), lv=st<SI.tens?0:st<SI.muldiv25?1:2;   // yardage size: small / medium / big
     const d= lv===0?r(2,5):lv===1?r(5,12):r(10,25);
     const bY= lv===0?r(9,14):r(18,35), aY=bY+d, cY=bY-(lv===0?r(2,5):r(4,10));
     const verb=pick([['ran for','1st half rushing'],['threw for','1st half passing']]);
@@ -1411,7 +1335,7 @@ function statAttack(){
       $('.chips').onclick=e=>{ const b=e.target.closest('.chip'); if(!b)return; sel=b.dataset.c; tone(700,.05,'triangle',.06); show(); };
       $('.rows').onclick=e=>{ const b=e.target.closest('.slot'); if(!b)return; const i=+b.dataset.s; if(sel){ const prev=fill.indexOf(sel); if(prev>=0) fill[prev]=null; fill[i]=sel; sel=null; } else fill[i]=null; tone(500,.05,'triangle',.06); show(); };
       $('#chk').onclick=()=>{ if(fill.some(f=>!f)){ lower('Fill in all three boxes first','info'); return; }
-        const win=rows.every((rw,i)=>fill[i]===rw.t); G.total++; if(win){ G.right++; ding(); roar(1,1.8); G.streak=Math.min(9,G.streak+3); } else bonk(); updateBoard(); show(win?'win':'lose'); };
+        const win=rows.every((rw,i)=>fill[i]===rw.t); recordAnswer({text:'Stat Attack'},win); if(win){ ding(); roar(1,1.8); } else bonk(); updateBoard(); show(win?'win':'lose'); };
     };
     G._panel=()=>show(); show();
   });

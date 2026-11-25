@@ -29,18 +29,18 @@ python3 tests/smoke_test.py        # plays a full automated game in headless Chr
 |---|---|
 | `LEAGUE` | `TEAMS` — all 32 NFL teams: city, name, colors (`c1` main, `c2` accent, `h` helmet), stadium |
 | `ROSTERS` | QB / RB / 3 WR / K per team as `[number, name]`, from Ourlads depth charts on 2026-11-22. Will go stale — refresh each season |
-| `saved settings` | `store` + `saved` defaults: `grade, step, win, ansMode, music, qLen, pclock, sound, opp, homeT, awayT, record, facts`. Old `level` is deleted on load; `step` defaults to the grade's start |
+| `saved settings` | `store` + `saved` defaults: `grade, stepId, win, ansMode, music, qLen, pclock, sound, opp, homeT, awayT, record, facts`, plus `v` (save version). `SAVE_VERSION` lives here; old data is upgraded only in `migrateSave()` |
 | `sound` / `stadium sound engine` | Synth primitives `osc()`, `nz()`, legacy synth sounds (`*_syn` fallbacks) |
 | `REAL STADIUM AUDIO` | `SND` map → `snd/*.mp3`, `loadSamples()`, `playS()`, wrappers `roar() aww() hit() boot() whistle() horn() claps() crowdBed()` that fall back to synth if a clip is missing |
 | `8-bit jingles` / `menu theme` | `chip()` sequencer, `fanfare()` (TD), `winJingle()`, `loseJingle()`, `ding()`, `bonk()`, looping menu theme `musicStart()/musicStop()` (original composition — don't swap in a real copyrighted theme) |
 | `musicStart/musicStop` | Menu theme plays through its own gain bus (`MUSBUS`); `musicStop()` fades and drops it so already-queued notes stop too. `musicStart()` does nothing unless `musicOn()` (Sound on **and** `saved.music`). The title screen's 🎵 button (`#tsnd`, top right) toggles **only** the title theme (`saved.music`); Settings → Sound and the in-game 🔊 still control all sound |
 | `unlockAudio` | iPhone audio unlock: runs on every tap; sets `navigator.audioSession.type='playback'`, resumes AudioContext, keeps a silent looping `<audio>` playing. **That silent track is what makes sounds play on Scott's iPhone — don't remove it.** |
-| `PROBLEMS` | Generators (`pAdd pTens pAddRe pAddDD p3 pMul pMulBig pDivR …`), the **`STEPS` ladder** (21 skills K→4th, each `{g, tag, f}`), `GRADES` (start step per grade), `stepFor(diff)` (which step Run/Pass/Bomb draw from), `playTag()`, `adaptRecord()` (step up/down), `gen()` with repeat-avoidance (`norm()`, last 12 facts) and missed-fact replay (after ≥4 other problems), `choicesFor()` (tap-mode distractors), `hintHTML()` hint pictures |
-| `GAME STATE` | `G` (per-game state), `newGame()`, `spotText()`, `ord()`. Also unused leftovers: player cards (`CARD_SLOTS`, `cardXP` is a no-op), `winProb()` |
+| `PROBLEMS` | Generators (`pAdd pTens pAddRe pAddDD p3 pMul pMulBig pDivR …`), the **`STEPS` ladder** (21 skills K→4th, each `{id, g, tag, f}`), `SI` (id → position), `GRADES` (start step **id** per grade), `curStep()/setStep()/resetLadder()`, `mathBand()` (size of extra-point / field-goal questions), `migrateSave()`, `stepFor(diff)` (which step Run/Pass/Bomb draw from), `playTag()`, `adaptRecord()` (step up/down), `gen()` with repeat-avoidance (`norm()`, last 12 facts) and missed-fact replay (after ≥4 other problems), `choicesFor()` (tap-mode distractors), `hintHTML()` hint pictures |
+| `GAME STATE` | `G` (per-game state), `newGame()`, `spotText()`, `ord()`, `factLog()` |
 | `FIELD + PLAYERS` / `BROADCAST CAMERA` | Formations (`OFF_POS`, `DEF_POS`, kick/punt variants), `setFormation()`, animation engine (`runAnim`, keyframes `kf`, `BALL.segs`), `draw()`, `drawPlayer()`, jersey numbers from rosters |
 | `PLAY ANIMATIONS` | `animPlay(side, losPos, spec)` — kinds `run pass bomb inc int sack fg punt`; `celebrate()`; `confetti()` |
-| `SCREENS` | `startScreen()` (two main dials only: Grade + Opponent, with ladder status `ladderText()`; Quarter length, Play clock, Sound, Answers and ladder reset live in Settings; 🎵 top right mutes just the title music), `teamPicker()`, `lockerRoom()` (**unused now** — kept for a possible return), `gameScreen()`, `updateBoard()`, `lower()` ticker |
-| `THE SNAP` | `ask(problem, opts)` → Promise `{ok, fast}`. Keypad (up to 4 digits) or 4 tap buttons (`useTap()`), optional play clock (`opts.clock`), "Film room" hint, feedback screen. Records stats, missed facts, `factLog()` |
+| `SCREENS` | `startScreen()` (two main dials only: Grade + Opponent, with ladder status `ladderText()`; Quarter length, Play clock, Sound, Answers and ladder reset live in Settings; 🎵 top right mutes just the title music), `teamPicker()`, `gameScreen()`, `updateBoard()`, `lower()` ticker |
+| `THE SNAP` | `ask(problem, opts)` → Promise `{ok, fast}`. Keypad (up to 4 digits) or 4 tap buttons (`useTap()`), optional play clock (`opts.clock`), "Film room" hint, feedback screen. Records stats, missed facts, `factLog()`. **`recordAnswer(p, ok)`** is the one place an answer is scored (stats, missed-fact replay, fact log, ladder); Stat Attack uses it too |
 | `FLOW` | `goTo()`, `quarterBreak()` (halftime → Stat Attack, OT), `startDrive()` |
 | `defensive looks` | `LOOKS` (blitz / box / deep), `chooseLook()`, `LOOK_POS` (defenders visibly line up differently), `callPlay()`, `runPlay()` — outcome table: right answer + right call = big play |
 | `defense` | `OPP` difficulty table, `defense()` — opponent drives play-by-play with real downs; each snap is one problem |
@@ -56,11 +56,11 @@ Problem objects look like `{text, answer, key, vis, diff, story?}`. `key` is the
 - **Offense:** before each snap the defense shows a look (Blitz / Stacked box / Deep coverage) with a coaching tip. Player picks Run (easy math) / Pass (medium) / Deep Bomb (hard). Right answer + right call = big gain; right answer + OK call = small gain; Deep Bomb vs Blitz risks a sack; a **wrong** Deep Bomb can be intercepted. 4th down: go for it, punt, or field goal (in range).
 - **Defense:** opponent drives one play at a time; each snap = one problem. Right answer usually stops the play; the `OPP` setting (Easy/Normal/Tough) sets how often they make a play anyway (`luck` 0.03 / 0.25 / 0.30). Tuned by simulation so a ~95%-accurate kid on Normal gives up roughly one score a game.
 - **Math ladder (v6):** one continuous ladder of 21 steps, K → 4th (`STEPS`). The **Grade** setting (K/1st/2nd/3rd/4th) only picks the starting step (K=3, 1st=7, 2nd=11, 3rd=15, 4th=19, 1-based). Pass = current step (sometimes 1–2 below), Run = 4–5 steps below (review), Deep Bomb = always one step above. Defense draws Run/Pass problems. At grade starts this reproduces the review / on-grade / stretch table that used to be in the roadmap.
-- **Adaptive:** rolling window of the last 10 ladder answers (`saved.win`, all play types together). 9+ of 10 right → step up (ding + "LEVEL UP!" on the feedback card and ticker). 4 misses in the window (≤60%) → quiet step down. The window clears after every change. `saved.step` persists, so the next game starts where he left off; the start screen shows "Math step N of 21: <skill>". Picking a different grade restarts the ladder at that grade; Settings → "Restart at … grade start" does the same for the current grade.
+- **Adaptive:** rolling window of the last 10 ladder answers (`saved.win`, all play types together). 9+ of 10 right → step up (ding + "LEVEL UP!" on the feedback card and ticker). 4 misses in the window (≤60%) → quiet step down. The window clears after every change. `saved.stepId` persists, so the next game starts where he left off; the start screen shows "Math step N of 21: <skill>". Picking a different grade restarts the ladder at that grade; Settings → "Restart at … grade start" does the same for the current grade.
 - **Answers:** Settings → Answers: Auto (Tap for K–1st, Type for 2nd+), Tap (4 big buttons, keys 1–4 on a keyboard), Type (keypad). Tap distractors come from `choicesFor()`: ±1/±2, ±10, swapped digits, neighbor facts (7×6 → 7×7, 6×6), wrong-operation answers; remainders only offer values below the divisor. Never negative, never duplicated.
 - **Clock:** 2/3/5-minute quarters, halftime Stat Attack, overtime if tied.
 - **Play clock:** optional, **off by default** — Scott's son may know an answer but type slowly. When on, beating it = +5 yards (offense) / sack (defense). Never a penalty.
-- **Removed on purpose** (Scott found them clutter for a 6-year-old): player cards / locker room / ratings, Coach's Bonus field-math questions, Momentum + Boost meter, win-probability bar, announcer voice, frequent whistles.
+- **Removed on purpose** (Scott found them clutter for a 6-year-old; code deleted in the v6 cleanup, old saved card data is wiped by `migrateSave()`): player cards / locker room / ratings, Coach's Bonus field-math questions, Momentum + Boost meter, win-probability bar, announcer voice, frequent whistles.
 
 ---
 
@@ -103,14 +103,21 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 ### Also worth doing (lower priority)
 - **Resume a game** after the app is closed/backgrounded (save `G` + current phase to `localStorage`).
 - **Works offline** — add a small service worker caching `index.html`, `snd/`, icons, fonts.
-- **Parent progress view** — the old times-table map (`factState()` + `saved.facts`) could return as a simple "Coach's report" without the player cards.
+- **Parent progress view** — `saved.facts` still records right/wrong per × fact (`{"6x7":[right,wrong]}`) but nothing shows it. A simple "Coach's report" (the old times-table map idea, without player cards) could read it. The old drawing code (`factState()`, `lockerRoom()`) was deleted in the v6 cleanup; it's in git history (commit `ae9d1df`).
 - **Dad vs kid / sibling mode** — two players, one device, each at their own grade.
 - **Recorded voice clips** (Scott's own) for "Hike!", "Touchdown!", "First down!".
-- Code health: split `index.html` into `css/`, `js/` modules (still no build step), and delete the unused player-card / locker-room / win-prob code.
+- Code health: split `index.html` into `css/`, `js/` modules (still no build step). Dead code from removed features was deleted in the v6 cleanup.
 
 ---
 
 ## 5. Things to keep in mind
+
+**Rules that keep the code from drifting (added in the v6 cleanup):**
+- **Ladder skills are referred to by `id`, never by position.** To add a skill, insert `{id, g, tag, f}` anywhere in `STEPS`; saved progress, grade starts and `mathBand()` all key off ids, so nothing shifts. Never write `curStep() < 7`; write `curStep() < SI.mul2510`. Don't rename or delete an id without a `migrateSave()` step for it.
+- **Changing what's saved?** Bump `SAVE_VERSION` and add one `if(v < N){…}` block to `migrateSave()`. Don't patch old saved data anywhere else.
+- **Every scored question goes through `recordAnswer()`** (via `ask()`, or directly like Stat Attack). Only problems from `gen()` (`adapt:true`) move the ladder.
+- **Removing a feature? Delete its code** (JS, CSS and saved keys via `migrateSave()`); don't leave it switched off. Git history keeps it.
+
 
 - **Audience is a 6–7 year old.** Big tap targets, no harsh failure (wrong answers show a dot-picture hint and the play still runs), short text, no reading-heavy screens, nothing that punishes slow typing.
 - **Real NFL teams and player names** are used knowingly for a small friends-and-family game: free, no ads, shared by link only. If it ever goes broader or makes money, switch to fictional teams/players first (team names are trademarks; player names in a game that depicts them playing are a right-of-publicity issue — see the EA/Keller line of cases).

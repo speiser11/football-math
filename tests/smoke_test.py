@@ -16,8 +16,8 @@ async def main(width,height,tag,seconds,grade,mode):
         pg.on('console',lambda m: errs.append(m.text) if m.type=='error' else None)
         await pg.goto('http://localhost:8765/index.html')
         await pg.screenshot(path=f'/tmp/fm_{tag}_start.png')
-        await pg.evaluate(f"saved.qLen=120; saved.pclock=10; saved.grade={grade}; saved.step=GRADES[{grade}].start; saved.win=[]; saved.ansMode='{mode}'")
-        step0=await pg.evaluate("saved.step")
+        await pg.evaluate(f"saved.qLen=120; saved.pclock=10; saved.grade={grade}; saved.ansMode='{mode}'; resetLadder()")
+        step0=await pg.evaluate("saved.stepId")
         await pg.click('#kick')
         shots={'call':0,'snap':0,'led':0,'anim':0}; t=0
         while t<seconds:
@@ -54,7 +54,7 @@ async def main(width,height,tag,seconds,grade,mode):
                 continue
             if shots['anim']<4 and random.random()<.08:
                 await pg.screenshot(path=f'/tmp/fm_{tag}_anim{shots["anim"]}.png'); shots['anim']+=1
-        st=await pg.evaluate("({q:G.q,clock:G.clock,home:G.home,away:G.away,total:G.total,right:G.right,step:saved.step})")
+        st=await pg.evaluate("({q:G.q,clock:G.clock,home:G.home,away:G.away,total:G.total,right:G.right,step:saved.stepId})")
         print(tag,st,'start step:',step0,'errors:',errs[:10])
         await b.close()
 a=sys.argv[1:]+['1024','1300','ipad','560','1','auto'][len(sys.argv[1:]):]

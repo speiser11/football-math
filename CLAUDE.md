@@ -2,13 +2,13 @@
 
 A kids' football game where every play is a math problem. Built for Scott's 1st grader (great at + and −, ahead on ×, starting ÷), shared with a few friends. Live at **https://speiser11.github.io/football-math/** (GitHub Pages, deploys from `main`, root folder).
 
-Read this first, then `index.html`. Keep this file updated when anything below changes.
+Read this first, then the file in `js/` for whatever you're changing (map in §2). Keep this file updated when anything below changes.
 
 ---
 
 ## 1. How it's built
 
-- **One static page, no build step.** `index.html` holds all CSS + JS (~1,300 lines). `snd/` holds recorded audio clips. `archive/` holds parked features that are **not loaded** by the page (currently player cards + locker room; see the header of `archive/player-cards.js` for how to restore). `manifest.json` + `icon-*.png` make "Add to Home Screen" work.
+- **Static site, no build step.** `index.html` is a ~30-line shell: it loads `css/style.css` and eight plain scripts from `js/` **in order** (`teams → core → audio → math → field → screens → game → main`). They are classic scripts, not ES modules: they share globals, and a file may only *run* code at load time that uses things from files above it (calling later files from inside functions is fine). Every `<link>`/`<script>` has the same `?v=` number — **bump it on all of them when releasing** so phones don't mix cached old and new files. `snd/` holds recorded audio clips. `archive/` holds parked features that are **not loaded** by the page (currently player cards + locker room; see the header of `archive/player-cards.js` for how to restore). `manifest.json` + `icon-*.png` make "Add to Home Screen" work.
 - **No backend, no accounts, no analytics.** Settings, season record and fact stats live in `localStorage` under key `footballMath1`. Keep it this way unless Scott decides otherwise — kids under 13 play this (COPPA).
 - **Rendering:** the field is a `<canvas>` drawn every frame (`draw()` / `drawPlayer()`) with a perspective "broadcast" camera. All UI around it is DOM.
 - **Fonts:** Google Fonts (Saira Condensed, Saira, DotGothic16 for the halftime LED board).
@@ -23,9 +23,23 @@ python3 tests/smoke_test.py        # plays a full automated game in headless Chr
 
 ---
 
-## 2. Code map (`index.html`, top to bottom)
+## 2. Code map
 
-| Section (search for the banner comment) | What's there |
+| File | Lines | Sections inside |
+|---|---|---|
+| `css/style.css` | ~170 | all styles |
+| `js/teams.js` | ~85 | `LEAGUE`, `ROSTERS` |
+| `js/core.js` | ~20 | `saved settings`, `helpers` |
+| `js/audio.js` | ~130 | `sound`, `stadium sound engine`, `REAL STADIUM AUDIO`, jingles, theme, `unlockAudio` |
+| `js/math.js` | ~150 | `PROBLEMS` (ladder, adaptive, `migrateSave()` — runs at load) |
+| `js/field.js` | ~330 | `GAME STATE`, `FIELD + PLAYERS`, `BROADCAST CAMERA`, `PLAY ANIMATIONS` |
+| `js/screens.js` | ~110 | `SCREENS`, `game screen` |
+| `js/game.js` | ~365 | `THE SNAP`, `FLOW`, `defensive looks`, `defense`, `HALFTIME STAT ATTACK`, `end` |
+| `js/main.js` | 2 | `startScreen()` |
+
+Details by section (search for the banner comment):
+
+| Section | What's there |
 |---|---|
 | `LEAGUE` | `TEAMS` — all 32 NFL teams: city, name, colors (`c1` main, `c2` accent, `h` helmet), stadium |
 | `ROSTERS` | QB / RB / 3 WR / K per team as `[number, name]`, from Ourlads depth charts on 2026-11-22. Will go stale — refresh each season |
@@ -100,6 +114,11 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 - Halftime Stat Attack only has 3 sizes (keyed off the step); could scale more finely.
 - "Coach's report" could show the step history.
 
+### Next up candidates (Scott, 2026-11-25)
+- **Backup code ("game password")** — high priority. Like old console passwords: a short code a parent writes down that restores a kid's progress on any device if storage gets wiped (Safari clears it, new phone, etc.). Ideas: encode the essentials only (grade, ladder `stepId`, W-L-T record, answer mode, team; later season + cards) into ~10–14 characters from an unambiguous alphabet (no 0/O/1/I/L), with a checksum so a typo is caught instead of loading garbage. Restore from Settings ("Enter code"). No server needed. Fact stats are too big for a short code — leave them out or offer a separate long "full backup" text.
+- **Player profiles** on one device ("Who's playing?"), each with its own ladder step, record and backup code.
+- **Coach's Corner** (parent view): times-table mastery map from `saved.facts` (green mastered / yellow learning / red needs practice), ladder step history. The old map drawing is in `archive/player-cards.js` (`factState()` + the grid in `lockerRoom()`).
+
 ### Later: player cards + season mode (Scott wants both eventually)
 - **Player cards** are parked in `archive/player-cards.js` / `.css` (working; checked against v6). Bring back as a reward layer once the core math loop feels right.
 - **Season mode** (a set number of games, standings, a playoff/championship, then a fresh season). **Can be fully local** — same `localStorage` as today, no server needed. A server is only needed for: the same season on several devices, several kids' profiles synced across devices, or friends' leagues.
@@ -108,21 +127,23 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 
 ### Also worth doing (lower priority)
 - **Resume a game** after the app is closed/backgrounded (save `G` + current phase to `localStorage`).
-- **Works offline** — add a small service worker caching `index.html`, `snd/`, icons, fonts.
-- **Parent progress view** — `saved.facts` still records right/wrong per × fact (`{"6x7":[right,wrong]}`) but nothing shows it. A simple "Coach's report" (the old times-table map idea, without player cards) could read it. The old drawing code (`factState()`, `lockerRoom()`) was deleted in the v6 cleanup; it's in git history (commit `ae9d1df`).
+- **Works offline** — add a small service worker caching `index.html`, `css/`, `js/`, `snd/`, icons, fonts.
+- **Coach's Corner with a times-table mastery map** (Scott likes this; not started) — `saved.facts` still records right/wrong per × fact (`{"6x7":[right,wrong]}`) but nothing shows it. A simple "Coach's report" (the old times-table map idea, without player cards) could read it. The old drawing code (`factState()`, `lockerRoom()`) was deleted in the v6 cleanup; it's in git history (commit `ae9d1df`).
 - **Dad vs kid / sibling mode** — two players, one device, each at their own grade.
 - **Recorded voice clips** (Scott's own) for "Hike!", "Touchdown!", "First down!".
-- Code health: split `index.html` into `css/`, `js/` modules (still no build step). Dead code from removed features was deleted in the v6 cleanup.
+- Code health: done in v6 (dead code removed, `index.html` split into `css/` + `js/`).
 
 ---
 
 ## 5. Things to keep in mind
 
 **Rules that keep the code from drifting (added in the v6 cleanup):**
+- **Releasing? Bump `?v=`** on every `<link>`/`<script>` in `index.html` (all the same number). Otherwise a phone can run a cached old `js/` file with a new one and break.
+- **New file in `js/`?** Add it to `index.html` in the right spot of the load order, and list it in §2.
 - **Ladder skills are referred to by `id`, never by position.** To add a skill, insert `{id, g, tag, f}` anywhere in `STEPS`; saved progress, grade starts and `mathBand()` all key off ids, so nothing shifts. Never write `curStep() < 7`; write `curStep() < SI.mul2510`. Don't rename or delete an id without a `migrateSave()` step for it.
 - **Changing what's saved?** Bump `SAVE_VERSION` and add one `if(v < N){…}` block to `migrateSave()`. Don't patch old saved data anywhere else.
 - **Every scored question goes through `recordAnswer()`** (via `ask()`, or directly like Stat Attack). Only problems from `gen()` (`adapt:true`) move the ladder.
-- **Removing a feature?** Don't leave it switched off inside `index.html`. If it may come back, move it to `archive/` with a how-to-restore note; otherwise delete it (git history keeps it). Clean up its saved keys in `migrateSave()`.
+- **Removing a feature?** Don't leave it switched off in the live code. If it may come back, move it to `archive/` with a how-to-restore note; otherwise delete it (git history keeps it). Clean up its saved keys in `migrateSave()`.
 
 
 - **Audience is a 6–7 year old.** Big tap targets, no harsh failure (wrong answers show a dot-picture hint and the play still runs), short text, no reading-heavy screens, nothing that punishes slow typing.

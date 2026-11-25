@@ -73,12 +73,14 @@ Settings pick a **grade** instead of a generic level. Each grade maps the three 
 | 3rd | 2-digit + − | × / ÷ within 100 (all tables) | 3-digit + −, ×6–9, ÷ with bigger facts |
 | 4th (stretch) | × / ÷ facts | multi-digit × 1-digit | ÷ with remainders |
 
+- **Grade is a starting point, not a ceiling.** Adaptive steps (B) keep climbing past the selected grade into the next grade's skills (and drop below it if needed). Deep Bomb always stays one notch above the current step. Reason: Scott's son is in 1st grade but already does harder multiplication — a 1st-grade cap would hide ×6–9 from him.
 - Defense problems: mix of review + on-grade (no stretch).
 - Halftime Stat Attack numbers should scale with grade too.
 - Scott's son: probably **1st grade with stretch**, or 2nd.
 
 ### B. Adaptive difficulty ("progressively harder or easier")
-- Split each grade into ~5 sub-steps (e.g. 1st: +within 10 → +within 20 → +10s → 2-digit+1-digit → ×2/5/10 intro).
+- Split each grade into ~5 sub-steps (e.g. 1st: +within 10 → +within 20 → +10s → 2-digit+1-digit → ×2/5/10 intro), chained into one continuous ladder K → 4th so a kid can climb across grade lines.
+- No manual difficulty setting inside a grade (decided with Scott): the start screen has just **Grade** (the math) and **Opponent** (the football). Optional parent-only "start step" at most.
 - Track a rolling window (last ~10 answers per play type). ≥90% right → step up; ≤60% → step down. Keep it quiet — a small "Level up!" moment at most, never a "too hard" message.
 - Persist per-device in `saved` so the next game starts where he left off. Show the current step on the start screen for the parent.
 

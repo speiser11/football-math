@@ -972,9 +972,9 @@ function startScreen(){
     <div class="opt"><span class="label">Grade</span>${segHTML('grade',GRADES.map((g,i)=>({v:i,l:g.l,s:g.s})),saved.grade)}
       <div class="note ladder" id="ladder">${ladderText()}</div></div>
     <div class="opt"><span class="label">Opponent</span>${segHTML('opp',[{v:'easy',l:'Easy',s:'scores rarely'},{v:'normal',l:'Normal',s:'close games'},{v:'tough',l:'Tough',s:'you need stops'}],saved.opp)}</div>
-    <div class="opt"><span class="label">Quarter length</span>${segHTML('qlen',[{v:120,l:'2 min',s:'quick'},{v:180,l:'3 min',s:'regular'},{v:300,l:'5 min',s:'long'}],saved.qLen)}</div>
     <button class="cta" id="kick">KICKOFF</button>
     <details class="settings glass"><summary>Settings</summary>
+      <div class="setrow"><span class="label">Quarter length</span>${segHTML('qlen',[{v:120,l:'2 min',s:'quick'},{v:180,l:'3 min',s:'regular'},{v:300,l:'5 min',s:'long'}],saved.qLen)}</div>
       <div class="setrow"><span class="label">Play clock</span>${segHTML('pc',[{v:0,l:'Off'},{v:20,l:'20 sec'},{v:10,l:'10 sec'}],saved.pclock)}
         <div class="note">Answer before the clock runs out for a +5 yard burst. Running out never hurts.</div></div>
       <div class="setrow"><span class="label">Answers</span>${segHTML('am',[{v:'auto',l:'Auto',s:'tap for K–1st'},{v:'tap',l:'Tap',s:'4 big buttons'},{v:'type',l:'Type',s:'number pad'}],saved.ansMode)}</div>

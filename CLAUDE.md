@@ -38,7 +38,7 @@ python3 tests/smoke_test.py        # plays a full automated game in headless Chr
 | `GAME STATE` | `G` (per-game state), `newGame()`, `spotText()`, `ord()`. Also unused leftovers: player cards (`CARD_SLOTS`, `cardXP` is a no-op), `winProb()` |
 | `FIELD + PLAYERS` / `BROADCAST CAMERA` | Formations (`OFF_POS`, `DEF_POS`, kick/punt variants), `setFormation()`, animation engine (`runAnim`, keyframes `kf`, `BALL.segs`), `draw()`, `drawPlayer()`, jersey numbers from rosters |
 | `PLAY ANIMATIONS` | `animPlay(side, losPos, spec)` — kinds `run pass bomb inc int sack fg punt`; `celebrate()`; `confetti()` |
-| `SCREENS` | `startScreen()` (Grade, ladder status `ladderText()`, Answers + ladder reset in Settings), `teamPicker()`, `lockerRoom()` (**unused now** — kept for a possible return), `gameScreen()`, `updateBoard()`, `lower()` ticker |
+| `SCREENS` | `startScreen()` (two main dials only: Grade + Opponent, with ladder status `ladderText()`; Quarter length, Play clock, Answers, ladder reset and Sound live in Settings), `teamPicker()`, `lockerRoom()` (**unused now** — kept for a possible return), `gameScreen()`, `updateBoard()`, `lower()` ticker |
 | `THE SNAP` | `ask(problem, opts)` → Promise `{ok, fast}`. Keypad (up to 4 digits) or 4 tap buttons (`useTap()`), optional play clock (`opts.clock`), "Film room" hint, feedback screen. Records stats, missed facts, `factLog()` |
 | `FLOW` | `goTo()`, `quarterBreak()` (halftime → Stat Attack, OT), `startDrive()` |
 | `defensive looks` | `LOOKS` (blitz / box / deep), `chooseLook()`, `LOOK_POS` (defenders visibly line up differently), `callPlay()`, `runPlay()` — outcome table: right answer + right call = big play |
